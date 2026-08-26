@@ -46,15 +46,15 @@ body {
 
 /* iOS Safe Areas */
 .pt-safe {
-  padding-top: env(safe-area-inset-top, 20px);
+  padding-top: max(18px, env(safe-area-inset-top, 18px));
 }
 
 .pb-safe {
-  padding-bottom: env(safe-area-inset-bottom, 20px);
+  padding-bottom: max(18px, env(safe-area-inset-bottom, 18px));
 }
 
 .pb-nav {
-  padding-bottom: calc(env(safe-area-inset-bottom, 20px) + 84px);
+  padding-bottom: calc(max(20px, env(safe-area-inset-bottom, 20px)) + 84px);
 }
 
 .mb-safe {

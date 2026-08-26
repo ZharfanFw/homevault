@@ -34,8 +34,8 @@ export function Navbar({
   };
 
   return (
-    <header className="sticky top-0 z-30 pt-safe px-4 pb-3 glass border-b border-[#434C5E]/70 transition-all">
-      <div className="max-w-xl mx-auto flex items-center justify-between gap-2">
+    <header className="sticky top-0 z-30 pt-safe px-4 pb-3.5 glass border-b border-[#434C5E]/70 transition-all">
+      <div className="max-w-xl mx-auto flex items-center justify-between gap-2 pt-1">
         {title ? (
           <h1 className="text-xl font-bold tracking-tight text-[#ECEFF4]">{title}</h1>
         ) : (

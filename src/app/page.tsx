@@ -1,69 +1,141 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useState, useEffect, useCallback } from "react";
+import { useApp } from "@/context/AppContext";
+import { NetWorthCard } from "@/components/dashboard/NetWorthCard";
+import { WalletList, WalletItem } from "@/components/dashboard/WalletList";
+import {
+  RecentTransactions,
+  TransactionItem,
+} from "@/components/dashboard/RecentTransactions";
+import {
+  ExpenseCategoryBreakdown,
+  CategoryBreakdownItem,
+} from "@/components/analytics/ExpenseCategoryBreakdown";
+import { WalletModal } from "@/components/modals/WalletModal";
+import { ChevronRight } from "lucide-react";
+import Link from "next/link";
+
+export default function DashboardPage() {
+  const {
+    selectedMonth,
+    selectedYear,
+    refreshTrigger,
+    triggerRefresh,
+    openQuickAdd,
+  } = useApp();
+
+  const [isLoading, setIsLoading] = useState(true);
+  const [netWorth, setNetWorth] = useState(0);
+  const [monthlyIncome, setMonthlyIncome] = useState(0);
+  const [monthlyExpense, setMonthlyExpense] = useState(0);
+  const [netCashflow, setNetCashflow] = useState(0);
+  const [categoryBreakdown, setCategoryBreakdown] = useState<
+    CategoryBreakdownItem[]
+  >([]);
+  const [recentTransactions, setRecentTransactions] = useState<
+    TransactionItem[]
+  >([]);
+  const [wallets, setWallets] = useState<WalletItem[]>([]);
+
+  const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const [summaryRes, walletsRes] = await Promise.all([
+        fetch(
+          `/api/analytics/summary?month=${selectedMonth}&year=${selectedYear}`
+        ),
+        fetch("/api/wallets"),
+      ]);
+
+      if (summaryRes.ok) {
+        const data = await summaryRes.json();
+        setNetWorth(data.netWorth || 0);
+        setMonthlyIncome(data.monthlyIncome || 0);
+        setMonthlyExpense(data.monthlyExpense || 0);
+        setNetCashflow(data.netCashflow || 0);
+        setCategoryBreakdown(data.categoryBreakdown || []);
+        setRecentTransactions(data.recentTransactions || []);
+      }
+
+      if (walletsRes.ok) {
+        const wData = await walletsRes.json();
+        setWallets(wData.wallets || []);
+      }
+    } catch (e) {
+      console.error("Dashboard fetch error:", e);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [selectedMonth, selectedYear]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData, refreshTrigger]);
+
+  const handleDeleteTransaction = async (id: string) => {
+    if (!confirm("Hapus transaksi ini?")) return;
+    try {
+      const res = await fetch(`/api/transactions/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        triggerRefresh();
+      }
+    } catch (e) {
+      console.error("Delete transaction error:", e);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="py-4 space-y-6">
+      {/* Net Worth & Cashflow Card */}
+      <NetWorthCard
+        netWorth={netWorth}
+        monthlyIncome={monthlyIncome}
+        monthlyExpense={monthlyExpense}
+        netCashflow={netCashflow}
+      />
+
+      {/* Wallets Row */}
+      <WalletList
+        wallets={wallets}
+        onAddWallet={() => setIsWalletModalOpen(true)}
+      />
+
+      {/* Category Expense Breakdown (Top 4) */}
+      {categoryBreakdown.length > 0 && (
+        <div className="mt-6">
+          <div className="flex items-center justify-between mb-3 px-1">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300">
+              Pengeluaran Berdasarkan Kategori
+            </h3>
+            <Link
+              href="/reports"
+              className="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-0.5 tap-effect"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              Detail <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          <ExpenseCategoryBreakdown
+            categories={categoryBreakdown.slice(0, 4)}
+            totalExpense={monthlyExpense}
+          />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      )}
+
+      {/* Recent Transactions List */}
+      <RecentTransactions
+        transactions={recentTransactions}
+        onDeleteTransaction={handleDeleteTransaction}
+      />
+
+      {/* Wallet Modal */}
+      <WalletModal
+        isOpen={isWalletModalOpen}
+        onClose={() => setIsWalletModalOpen(false)}
+        onSuccess={() => triggerRefresh()}
+      />
     </div>
   );
 }

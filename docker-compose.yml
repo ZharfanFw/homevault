@@ -1,0 +1,21 @@
+services:
+  finance-tracker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: finance-tracker
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - SESSION_SECRET=change-this-to-a-secure-random-secret-string-32-chars
+      - DATABASE_PATH=/app/data/finance.db
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:3000/api/auth/me || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

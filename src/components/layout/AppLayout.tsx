@@ -23,12 +23,12 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   // If loading session
   if (isLoadingUser) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 animate-pulse">
-          <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+      <div className="min-h-screen bg-[#242933] flex flex-col items-center justify-center p-4">
+        <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#5E81AC] to-[#88C0D0] flex items-center justify-center shadow-lg shadow-[#88C0D0]/20 animate-pulse">
+          <div className="w-6 h-6 border-2 border-[#2E3440]/30 border-t-[#2E3440] rounded-full animate-spin" />
         </div>
-        <p className="text-xs font-semibold text-slate-400 mt-4 tracking-wider uppercase">
-          Finance Tracker
+        <p className="text-xs font-bold text-[#81A1C1] mt-4 tracking-wider uppercase">
+          HomeVault
         </p>
       </div>
     );
@@ -41,11 +41,11 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   // If on /auth page
   if (isAuthPage) {
-    return <main className="min-h-screen bg-slate-950">{children}</main>;
+    return <main className="min-h-screen bg-[#242933]">{children}</main>;
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col antialiased selection:bg-blue-500 selection:text-white">
+    <div className="min-h-screen bg-[#242933] text-[#ECEFF4] flex flex-col antialiased selection:bg-[#88C0D0] selection:text-[#2E3440]">
       <Navbar />
 
       <main className="flex-1 max-w-xl w-full mx-auto px-4 pb-nav">

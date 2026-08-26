@@ -25,13 +25,13 @@ export function DailyTrendChart({
   const maxExpense = Math.max(...dailyTrends.map((d) => d.expense), 1000);
 
   return (
-    <div className="p-4 sm:p-5 rounded-3xl bg-slate-900/80 border border-slate-800 shadow-md">
+    <div className="p-4 sm:p-5 rounded-3xl bg-[#2E3440] border border-[#434C5E] shadow-md">
       <div className="flex items-center justify-between mb-3">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300">
+        <h4 className="text-xs font-bold uppercase tracking-wider text-[#81A1C1]">
           Tren Pengeluaran Harian
         </h4>
         {hoveredDay && (
-          <span className="text-[11px] font-mono text-red-400 font-semibold">
+          <span className="text-[11px] font-mono text-[#BF616A] font-bold">
             Tgl {hoveredDay.day}: {formatCurrency(hoveredDay.expense)}
           </span>
         )}
@@ -57,11 +57,11 @@ export function DailyTrendChart({
                 style={{ height: `${hasExpense ? heightPct : 4}%` }}
                 className={`w-full rounded-t-md transition-all ${
                   hasExpense
-                    ? "bg-gradient-to-t from-red-600/80 to-rose-400 group-hover:from-red-500 group-hover:to-rose-300 shadow-sm"
-                    : "bg-slate-800/40"
+                    ? "bg-gradient-to-t from-[#BF616A] to-[#D08770] group-hover:brightness-110 shadow-sm"
+                    : "bg-[#3B4252]/50"
                 }`}
               />
-              <span className="text-[9px] font-mono text-slate-500 mt-1">
+              <span className="text-[9px] font-mono text-[#D8DEE9]/60 mt-1">
                 {item.day % 5 === 0 || item.day === 1 ? item.day : ""}
               </span>
             </div>

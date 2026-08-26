@@ -58,10 +58,10 @@ export default function ReportsPage() {
     <div className="py-4 space-y-6">
       {/* Title */}
       <div>
-        <h2 className="text-xl font-bold text-white tracking-tight">
+        <h2 className="text-xl font-bold text-[#ECEFF4] tracking-tight">
           Laporan Keuangan
         </h2>
-        <p className="text-xs text-slate-400 mt-0.5">
+        <p className="text-xs text-[#81A1C1] mt-0.5 font-medium">
           Analisis dan tren keuangan bulan {getMonthName(selectedMonth - 1)}{" "}
           {selectedYear}
         </p>
@@ -69,31 +69,31 @@ export default function ReportsPage() {
 
       {/* 4-Card Summary Grid */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-sm">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 mb-1">
-            <TrendingUp className="w-4 h-4" /> Total Pemasukan
+        <div className="p-4 rounded-2xl bg-[#2E3440] border border-[#434C5E] shadow-sm">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[#A3BE8C] mb-1">
+            <TrendingUp className="w-4 h-4 stroke-[2.5]" /> Total Pemasukan
           </div>
-          <p className="text-base sm:text-lg font-bold text-white font-mono truncate">
+          <p className="text-base sm:text-lg font-extrabold text-[#ECEFF4] font-mono truncate">
             {formatCurrency(monthlyIncome)}
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-sm">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-red-400 mb-1">
-            <TrendingDown className="w-4 h-4" /> Total Pengeluaran
+        <div className="p-4 rounded-2xl bg-[#2E3440] border border-[#434C5E] shadow-sm">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[#BF616A] mb-1">
+            <TrendingDown className="w-4 h-4 stroke-[2.5]" /> Total Pengeluaran
           </div>
-          <p className="text-base sm:text-lg font-bold text-white font-mono truncate">
+          <p className="text-base sm:text-lg font-extrabold text-[#ECEFF4] font-mono truncate">
             {formatCurrency(monthlyExpense)}
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-sm">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-400 mb-1">
-            <ArrowLeftRight className="w-4 h-4" /> Arus Kas Bersih
+        <div className="p-4 rounded-2xl bg-[#2E3440] border border-[#434C5E] shadow-sm">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[#88C0D0] mb-1">
+            <ArrowLeftRight className="w-4 h-4 stroke-[2.5]" /> Arus Kas Bersih
           </div>
           <p
-            className={`text-base sm:text-lg font-bold font-mono truncate ${
-              netCashflow >= 0 ? "text-emerald-400" : "text-red-400"
+            className={`text-base sm:text-lg font-extrabold font-mono truncate ${
+              netCashflow >= 0 ? "text-[#A3BE8C]" : "text-[#BF616A]"
             }`}
           >
             {netCashflow >= 0 ? "+" : ""}
@@ -101,13 +101,13 @@ export default function ReportsPage() {
           </p>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-sm">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-purple-400 mb-1">
-            <Percent className="w-4 h-4" /> Rasio Tabungan
+        <div className="p-4 rounded-2xl bg-[#2E3440] border border-[#434C5E] shadow-sm">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[#B48EAD] mb-1">
+            <Percent className="w-4 h-4 stroke-[2.5]" /> Rasio Tabungan
           </div>
           <p
-            className={`text-base sm:text-lg font-bold font-mono ${
-              savingsRate >= 0 ? "text-purple-300" : "text-red-400"
+            className={`text-base sm:text-lg font-extrabold font-mono ${
+              savingsRate >= 0 ? "text-[#B48EAD]" : "text-[#BF616A]"
             }`}
           >
             {savingsRate}%
@@ -124,7 +124,7 @@ export default function ReportsPage() {
 
       {/* Expense by Category Breakdown */}
       <div>
-        <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300 mb-3 px-1">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-[#81A1C1] mb-3 px-1">
           Rincian Pengeluaran per Kategori
         </h3>
         <ExpenseCategoryBreakdown

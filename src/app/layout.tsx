@@ -20,21 +20,18 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#090d16" },
-    { media: "(prefers-color-scheme: light)", color: "#090d16" },
-  ],
+  themeColor: "#242933",
 };
 
 export const metadata: Metadata = {
-  title: "Family Finance - Personal Finance Tracker",
+  title: "HomeVault - Personal & Family Finance Tracker",
   description:
-    "Self-Hosted Multi-User Personal Finance Tracker optimized for iOS PWA and Home Server",
+    "Self-Hosted Multi-User Personal Finance Tracker with Nord Theme, optimized for iOS PWA and Home Server",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Finance",
+    title: "HomeVault",
   },
   icons: {
     icon: "/icons/icon.svg",
@@ -52,7 +49,7 @@ export default function RootLayout({
       lang="id"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased dark`}
     >
-      <body className="min-h-full flex flex-col bg-slate-950 text-slate-100 font-sans">
+      <body className="min-h-full flex flex-col bg-[#242933] text-[#ECEFF4] font-sans selection:bg-[#88C0D0] selection:text-[#2E3440]">
         <AppProvider>
           <AppLayout>{children}</AppLayout>
         </AppProvider>

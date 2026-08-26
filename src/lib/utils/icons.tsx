@@ -62,19 +62,20 @@ export const ICON_MAP: Record<string, React.ComponentType<LucideProps>> = {
   smile: Smile,
 };
 
+// Nord Color Palette (Frost & Aurora)
 export const COLOR_PALETTE = [
-  "#3b82f6", // Blue
-  "#10b981", // Emerald
-  "#f97316", // Orange
-  "#8b5cf6", // Violet
-  "#ec4899", // Pink
-  "#06b6d4", // Cyan
-  "#f59e0b", // Amber
-  "#ef4444", // Red
-  "#6366f1", // Indigo
-  "#14b8a6", // Teal
-  "#84cc16", // Lime
-  "#64748b", // Slate
+  "#88C0D0", // nord8 (Frost Ice Blue)
+  "#81A1C1", // nord9 (Frost Glacier Blue)
+  "#5E81AC", // nord10 (Frost Deep Arctic Blue)
+  "#8FBCBB", // nord7 (Frost Teal)
+  "#A3BE8C", // nord14 (Aurora Green)
+  "#EBCB8B", // nord13 (Aurora Yellow)
+  "#D08770", // nord12 (Aurora Orange)
+  "#BF616A", // nord11 (Aurora Red)
+  "#B48EAD", // nord15 (Aurora Purple)
+  "#4C566A", // nord3 (Polar Dark Slate)
+  "#D8DEE9", // nord4 (Snow Storm)
+  "#3B4252", // nord1 (Polar Night)
 ];
 
 export const AVAILABLE_ICONS = Object.keys(ICON_MAP);

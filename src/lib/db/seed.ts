@@ -2,23 +2,24 @@ import { db, categories, wallets } from "./index";
 import crypto from "crypto";
 
 export async function seedUserData(userId: string) {
+  // Curated Nord Aurora & Frost colors
   const defaultExpenseCategories = [
-    { name: "Makanan & Minuman", icon: "utensils", color: "#f97316" },
-    { name: "Belanja Bulanan", icon: "shopping-cart", color: "#06b6d4" },
-    { name: "Transportasi", icon: "car", color: "#3b82f6" },
-    { name: "Tagihan & Utilitas", icon: "receipt", color: "#ef4444" },
-    { name: "Hiburan & Hobi", icon: "gamepad-2", color: "#a855f7" },
-    { name: "Kesehatan", icon: "heart-pulse", color: "#ec4899" },
-    { name: "Pendidikan", icon: "graduation-cap", color: "#10b981" },
-    { name: "Lainnya", icon: "more-horizontal", color: "#64748b" },
+    { name: "Makanan & Minuman", icon: "utensils", color: "#D08770" }, // nord12 Orange
+    { name: "Belanja Bulanan", icon: "shopping-cart", color: "#8FBCBB" }, // nord7 Teal
+    { name: "Transportasi", icon: "car", color: "#81A1C1" }, // nord9 Glacier Blue
+    { name: "Tagihan & Utilitas", icon: "receipt", color: "#BF616A" }, // nord11 Red
+    { name: "Hiburan & Hobi", icon: "gamepad-2", color: "#B48EAD" }, // nord15 Purple
+    { name: "Kesehatan", icon: "heart-pulse", color: "#EBCB8B" }, // nord13 Yellow
+    { name: "Pendidikan", icon: "graduation-cap", color: "#A3BE8C" }, // nord14 Green
+    { name: "Lainnya", icon: "more-horizontal", color: "#4C566A" }, // nord3 Slate
   ];
 
   const defaultIncomeCategories = [
-    { name: "Gaji Utama", icon: "briefcase", color: "#10b981" },
-    { name: "Bonus & THR", icon: "gift", color: "#f59e0b" },
-    { name: "Investasi & Dividen", icon: "trending-up", color: "#6366f1" },
-    { name: "Freelance & Bisnis", icon: "laptop", color: "#06b6d4" },
-    { name: "Pemasukan Lainnya", icon: "piggy-bank", color: "#8b5cf6" },
+    { name: "Gaji Utama", icon: "briefcase", color: "#A3BE8C" }, // nord14 Green
+    { name: "Bonus & THR", icon: "gift", color: "#EBCB8B" }, // nord13 Yellow
+    { name: "Investasi & Dividen", icon: "trending-up", color: "#88C0D0" }, // nord8 Ice Blue
+    { name: "Freelance & Bisnis", icon: "laptop", color: "#81A1C1" }, // nord9 Glacier Blue
+    { name: "Pemasukan Lainnya", icon: "piggy-bank", color: "#B48EAD" }, // nord15 Purple
   ];
 
   const categoryInserts = [
@@ -49,7 +50,7 @@ export async function seedUserData(userId: string) {
       name: "Dompet Tunai",
       type: "CASH" as const,
       initialBalance: 0,
-      color: "#10b981",
+      color: "#A3BE8C", // nord14 Green
       icon: "banknote",
       isArchived: false,
       createdAt: new Date(),
@@ -60,7 +61,7 @@ export async function seedUserData(userId: string) {
       name: "Rekening Utama",
       type: "BANK" as const,
       initialBalance: 0,
-      color: "#3b82f6",
+      color: "#88C0D0", // nord8 Frost Ice Blue
       icon: "building-2",
       isArchived: false,
       createdAt: new Date(),

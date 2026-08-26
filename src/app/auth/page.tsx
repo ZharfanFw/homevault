@@ -10,7 +10,6 @@ import {
   Mail,
   User,
   ArrowRight,
-  Sparkles,
 } from "lucide-react";
 
 export default function AuthPage() {
@@ -68,39 +67,39 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-8 relative overflow-hidden bg-slate-950">
-      {/* Dynamic background glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-80 h-80 bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen flex flex-col justify-center items-center px-4 py-8 relative overflow-hidden bg-[#242933]">
+      {/* Nord Aurora & Frost background glow */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-80 h-80 bg-[#88C0D0]/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 left-1/3 w-64 h-64 bg-[#5E81AC]/15 rounded-full blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-sm z-10">
         {/* App Logo & Header */}
         <div className="text-center mb-6">
-          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 mx-auto flex items-center justify-center shadow-xl shadow-blue-500/25 mb-3">
-            <Wallet className="w-8 h-8 text-white" />
+          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-[#5E81AC] via-[#81A1C1] to-[#88C0D0] mx-auto flex items-center justify-center shadow-xl shadow-[#88C0D0]/20 mb-3 ring-1 ring-white/20">
+            <Wallet className="w-8 h-8 text-[#2E3440] stroke-[2.4]" />
           </div>
-          <h1 className="text-2xl font-extrabold text-white tracking-tight">
-            Family Finance
+          <h1 className="text-2xl font-extrabold text-[#ECEFF4] tracking-tight">
+            HomeVault
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Personal & Family Finance Tracker
+          <p className="text-xs font-medium text-[#81A1C1] mt-1 tracking-wide">
+            Self-Hosted Family Finance Tracker
           </p>
         </div>
 
         {/* Auth Card */}
-        <div className="glass-card rounded-3xl p-6 shadow-2xl border border-slate-800">
+        <div className="glass-card rounded-3xl p-6 shadow-2xl border border-[#434C5E]">
           {/* Mode Switcher */}
-          <div className="grid grid-cols-2 gap-1 p-1 bg-slate-950/80 rounded-2xl mb-5 border border-slate-800">
+          <div className="grid grid-cols-2 gap-1 p-1 bg-[#242933] rounded-2xl mb-5 border border-[#434C5E]">
             <button
               type="button"
               onClick={() => {
                 setMode("login");
                 setError("");
               }}
-              className={`py-2 text-xs font-semibold rounded-xl tap-effect transition-all ${
+              className={`py-2 text-xs font-bold rounded-xl tap-effect transition-all ${
                 mode === "login"
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-[#88C0D0] text-[#2E3440] shadow-sm"
+                  : "text-[#D8DEE9]/70 hover:text-[#ECEFF4]"
               }`}
             >
               Masuk
@@ -114,12 +113,12 @@ export default function AuthPage() {
                   setError("");
                 }
               }}
-              className={`py-2 text-xs font-semibold rounded-xl tap-effect transition-all ${
+              className={`py-2 text-xs font-bold rounded-xl tap-effect transition-all ${
                 mode === "register"
-                  ? "bg-blue-600 text-white shadow-sm"
+                  ? "bg-[#88C0D0] text-[#2E3440] shadow-sm"
                   : !registrationAllowed
-                  ? "text-slate-600 cursor-not-allowed"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "text-[#4C566A] cursor-not-allowed"
+                  : "text-[#D8DEE9]/70 hover:text-[#ECEFF4]"
               }`}
             >
               Daftar Baru
@@ -127,13 +126,13 @@ export default function AuthPage() {
           </div>
 
           {!registrationAllowed && mode === "register" && (
-            <div className="mb-4 p-3 bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs rounded-xl">
+            <div className="mb-4 p-3 bg-[#EBCB8B]/15 border border-[#EBCB8B]/30 text-[#EBCB8B] text-xs rounded-xl font-medium">
               Pendaftaran anggota baru dinonaktifkan oleh administrator.
             </div>
           )}
 
           {error && (
-            <div className="mb-4 p-3 bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-xl">
+            <div className="mb-4 p-3 bg-[#BF616A]/15 border border-[#BF616A]/30 text-[#BF616A] text-xs rounded-xl font-medium">
               {error}
             </div>
           )}
@@ -141,17 +140,17 @@ export default function AuthPage() {
           <form onSubmit={handleSubmit} className="space-y-3.5">
             {mode === "register" && (
               <div>
-                <label className="text-[11px] font-medium text-slate-400 block mb-1">
+                <label className="text-[11px] font-semibold text-[#D8DEE9] block mb-1">
                   Nama Lengkap
                 </label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <User className="w-4 h-4 text-[#81A1C1] absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     placeholder="Contoh: Zharfan"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-10 pr-3 py-2.5 text-xs text-white focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder-slate-600"
+                    className="w-full bg-[#242933] border border-[#434C5E] rounded-xl pl-10 pr-3 py-2.5 text-xs text-[#ECEFF4] focus:ring-2 focus:ring-[#88C0D0] focus:outline-none placeholder-[#4C566A]"
                     required
                   />
                 </div>
@@ -159,34 +158,34 @@ export default function AuthPage() {
             )}
 
             <div>
-              <label className="text-[11px] font-medium text-slate-400 block mb-1">
+              <label className="text-[11px] font-semibold text-[#D8DEE9] block mb-1">
                 Email
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Mail className="w-4 h-4 text-[#81A1C1] absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="email"
                   placeholder="nama@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-10 pr-3 py-2.5 text-xs text-white focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder-slate-600"
+                  className="w-full bg-[#242933] border border-[#434C5E] rounded-xl pl-10 pr-3 py-2.5 text-xs text-[#ECEFF4] focus:ring-2 focus:ring-[#88C0D0] focus:outline-none placeholder-[#4C566A]"
                   required
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-[11px] font-medium text-slate-400 block mb-1">
+              <label className="text-[11px] font-semibold text-[#D8DEE9] block mb-1">
                 Password
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-[#81A1C1] absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="password"
                   placeholder="Minimal 6 karakter"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-10 pr-3 py-2.5 text-xs text-white focus:ring-2 focus:ring-blue-500 focus:outline-none placeholder-slate-600"
+                  className="w-full bg-[#242933] border border-[#434C5E] rounded-xl pl-10 pr-3 py-2.5 text-xs text-[#ECEFF4] focus:ring-2 focus:ring-[#88C0D0] focus:outline-none placeholder-[#4C566A]"
                   required
                 />
               </div>
@@ -195,14 +194,14 @@ export default function AuthPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-2 py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold text-xs shadow-lg shadow-blue-500/25 tap-effect flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+              className="w-full mt-2 py-3 px-4 rounded-xl bg-gradient-to-r from-[#5E81AC] to-[#88C0D0] hover:brightness-110 text-[#2E3440] font-extrabold text-xs shadow-lg shadow-[#88C0D0]/25 tap-effect flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 transition-all"
             >
               {isLoading ? (
-                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <div className="w-4 h-4 border-2 border-[#2E3440]/30 border-t-[#2E3440] rounded-full animate-spin" />
               ) : (
                 <>
                   {mode === "login" ? "Masuk ke Akun" : "Daftar Sekarang"}
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4 stroke-[2.5]" />
                 </>
               )}
             </button>
@@ -211,8 +210,8 @@ export default function AuthPage() {
 
         {/* Security / Privacy Badge */}
         <div className="mt-6 text-center">
-          <p className="inline-flex items-center gap-1.5 text-[11px] text-slate-500">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+          <p className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#81A1C1]">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#A3BE8C]" />
             100% Self-Hosted & Private Multi-User
           </p>
         </div>

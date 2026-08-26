@@ -3,7 +3,7 @@
 import React from "react";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import { CategoryIcon } from "@/lib/utils/icons";
-import { ArrowLeftRight, Trash2, Calendar, ChevronRight } from "lucide-react";
+import { ArrowLeftRight, Trash2, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 export interface TransactionItem {
@@ -35,13 +35,13 @@ export function RecentTransactions({
   return (
     <div className="mt-6">
       <div className="flex items-center justify-between mb-3 px-1">
-        <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-[#81A1C1]">
           Transaksi Terakhir
         </h3>
         {showAllLink && (
           <Link
             href="/transactions"
-            className="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-0.5 tap-effect"
+            className="text-xs font-semibold text-[#88C0D0] hover:text-[#ECEFF4] flex items-center gap-0.5 tap-effect transition-colors"
           >
             Semua Transaksi <ChevronRight className="w-3.5 h-3.5" />
           </Link>
@@ -49,8 +49,8 @@ export function RecentTransactions({
       </div>
 
       {transactions.length === 0 ? (
-        <div className="p-8 text-center bg-slate-900/60 border border-slate-800 rounded-2xl">
-          <p className="text-xs text-slate-500">Belum ada transaksi bulan ini.</p>
+        <div className="p-8 text-center bg-[#2E3440]/60 border border-[#434C5E] rounded-2xl">
+          <p className="text-xs text-[#D8DEE9]/60">Belum ada transaksi bulan ini.</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -63,43 +63,43 @@ export function RecentTransactions({
               ? "arrow-left-right"
               : tx.categoryIcon || "tag";
             const iconBg = isTransfer
-              ? "#3b82f6"
+              ? "#88C0D0"
               : isIncome
-              ? tx.categoryColor || "#10b981"
-              : tx.categoryColor || "#ef4444";
+              ? tx.categoryColor || "#A3BE8C"
+              : tx.categoryColor || "#BF616A";
 
             return (
               <div
                 key={tx.id}
-                className="group flex items-center justify-between p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800/80 hover:border-slate-700 shadow-sm transition-all"
+                className="group flex items-center justify-between p-3.5 rounded-2xl bg-[#2E3440] border border-[#434C5E]/70 hover:border-[#81A1C1] shadow-sm transition-all"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-white shrink-0 shadow-sm"
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-[#2E3440] shrink-0 shadow-sm ring-1 ring-white/10"
                     style={{ backgroundColor: iconBg }}
                   >
                     {isTransfer ? (
-                      <ArrowLeftRight className="w-5 h-5" />
+                      <ArrowLeftRight className="w-5 h-5 stroke-[2.5]" />
                     ) : (
                       <CategoryIcon name={iconName} className="w-5 h-5" />
                     )}
                   </div>
 
                   <div className="min-w-0">
-                    <p className="text-xs sm:text-sm font-semibold text-white truncate">
+                    <p className="text-xs sm:text-sm font-bold text-[#ECEFF4] truncate">
                       {isTransfer
                         ? `Transfer ke ${tx.destinationWalletName || "Dompet"}`
                         : tx.categoryName || "Transaksi"}
                     </p>
-                    <div className="flex items-center gap-1.5 text-[11px] text-slate-400 mt-0.5">
-                      <span className="truncate">
+                    <div className="flex items-center gap-1.5 text-[11px] text-[#D8DEE9]/70 mt-0.5">
+                      <span className="truncate text-[#81A1C1] font-medium">
                         {tx.walletName || "Dompet"}
                       </span>
                       <span>•</span>
                       <span>{formatDate(tx.date)}</span>
                     </div>
                     {tx.notes && (
-                      <p className="text-[10px] text-slate-500 truncate mt-0.5 italic">
+                      <p className="text-[10px] text-[#D8DEE9]/60 truncate mt-0.5 italic">
                         &ldquo;{tx.notes}&rdquo;
                       </p>
                     )}
@@ -108,12 +108,12 @@ export function RecentTransactions({
 
                 <div className="flex items-center gap-2.5 shrink-0 ml-3">
                   <span
-                    className={`text-xs sm:text-sm font-bold font-mono ${
+                    className={`text-xs sm:text-sm font-extrabold font-mono ${
                       isExpense
-                        ? "text-red-400"
+                        ? "text-[#BF616A]"
                         : isIncome
-                        ? "text-emerald-400"
-                        : "text-blue-400"
+                        ? "text-[#A3BE8C]"
+                        : "text-[#88C0D0]"
                     }`}
                   >
                     {isExpense ? "-" : isIncome ? "+" : ""}
@@ -123,7 +123,7 @@ export function RecentTransactions({
                   {onDeleteTransaction && (
                     <button
                       onClick={() => onDeleteTransaction(tx.id)}
-                      className="p-1 text-slate-600 hover:text-red-400 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity tap-effect"
+                      className="p-1.5 text-[#D8DEE9]/40 hover:text-[#BF616A] rounded-lg opacity-0 group-hover:opacity-100 hover:bg-[#3B4252] transition-all tap-effect"
                       aria-label="Hapus Transaksi"
                     >
                       <Trash2 className="w-3.5 h-3.5" />

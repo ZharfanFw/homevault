@@ -6,7 +6,7 @@ services:
     container_name: finance-tracker
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "${PORT:-3050}:3000"
     environment:
       - NODE_ENV=production
       - SESSION_SECRET=change-this-to-a-secure-random-secret-string-32-chars

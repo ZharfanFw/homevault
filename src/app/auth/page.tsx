@@ -57,7 +57,7 @@ export default function AuthPage() {
         setError(data.error || "Gagal melakukan autentikasi.");
       } else {
         await refreshUser();
-        router.push("/");
+        window.location.href = "/";
       }
     } catch {
       setError("Terjadi kesalahan jaringan.");

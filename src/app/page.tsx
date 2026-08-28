@@ -107,12 +107,12 @@ export default function DashboardPage() {
       {categoryBreakdown.length > 0 && (
         <div className="mt-6">
           <div className="flex items-center justify-between mb-3 px-1">
-            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-[#81A1C1]">
               Pengeluaran Berdasarkan Kategori
             </h3>
             <Link
               href="/reports"
-              className="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-0.5 tap-effect"
+              className="text-xs font-semibold text-[#88C0D0] hover:text-[#ECEFF4] flex items-center gap-0.5 tap-effect transition-colors"
             >
               Detail <ChevronRight className="w-3.5 h-3.5" />
             </Link>

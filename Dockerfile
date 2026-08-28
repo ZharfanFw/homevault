@@ -1,9 +1,10 @@
-# Base Node 22 image (matches better-sqlite3 engine requirement and provides official prebuilt binaries)
+# Base Node 22 image
 FROM node:22-slim AS base
 WORKDIR /app
 
-# Dependencies Stage
+# Dependencies Stage (installs build tools for better-sqlite3 native addon)
 FROM base AS deps
+RUN apt-get update && apt-get install -y python3 make g++ --no-install-recommends && rm -rf /var/lib/apt/lists/*
 COPY package.json package-lock.json ./
 RUN npm ci
 
@@ -14,7 +15,7 @@ COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
-# Production Runner Stage
+# Production Runner Stage (clean runtime without heavy build dependencies)
 FROM node:22-slim AS runner
 WORKDIR /app
 

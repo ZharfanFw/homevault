@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { X, Check } from "lucide-react";
 import { COLOR_PALETTE, AVAILABLE_ICONS, CategoryIcon } from "@/lib/utils/icons";
+import { parseAmountInput, formatAmountInput } from "@/lib/utils/format";
 
 interface WalletModalProps {
   isOpen: boolean;
@@ -38,7 +39,7 @@ export function WalletModal({
     if (wallet) {
       setName(wallet.name);
       setType(wallet.type);
-      setInitialBalance(wallet.initialBalance.toString());
+      setInitialBalance(formatAmountInput(wallet.initialBalance));
       setColor(wallet.color);
       setIcon(wallet.icon);
       setIsArchived(wallet.isArchived);
@@ -75,7 +76,7 @@ export function WalletModal({
         body: JSON.stringify({
           name: name.trim(),
           type,
-          initialBalance: parseInt(initialBalance, 10) || 0,
+          initialBalance: parseAmountInput(initialBalance),
           color,
           icon,
           isArchived,
@@ -158,9 +159,15 @@ export function WalletModal({
                 Saldo Awal (Rp)
               </label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 value={initialBalance}
-                onChange={(e) => setInitialBalance(e.target.value)}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  const parsed = parseAmountInput(raw);
+                  setInitialBalance(raw ? formatAmountInput(parsed) : "");
+                }}
+                placeholder="0"
                 className="w-full bg-[#242933] border border-[#434C5E] rounded-xl px-3 py-2 text-xs text-[#ECEFF4] focus:ring-2 focus:ring-[#88C0D0] focus:outline-none font-mono"
               />
             </div>

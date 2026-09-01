@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useApp } from "@/context/AppContext";
 import { X, ArrowDownRight, ArrowUpRight, ArrowLeftRight, Check, Calendar, StickyNote } from "lucide-react";
 import { CategoryIcon } from "@/lib/utils/icons";
+import { parseAmountInput, formatAmountInput } from "@/lib/utils/format";
 
 interface WalletOption {
   id: string;
@@ -96,20 +97,29 @@ export function QuickAddModal() {
   if (!isQuickAddOpen) return null;
 
   const handleAddAmount = (addValue: number) => {
-    const current = parseInt(amountStr || "0", 10);
-    setAmountStr((current + addValue).toString());
+    const current = parseAmountInput(amountStr);
+    const newAmount = current + addValue;
+    setAmountStr(newAmount > 0 ? formatAmountInput(newAmount) : "");
   };
 
   const handleAppendZeros = () => {
-    if (!amountStr) return;
-    setAmountStr((prev) => prev + "000");
+    const current = parseAmountInput(amountStr);
+    if (!current) return;
+    const newAmount = current * 1000;
+    setAmountStr(formatAmountInput(newAmount));
+  };
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    const parsed = parseAmountInput(raw);
+    setAmountStr(raw ? formatAmountInput(parsed) : "");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    const amount = parseInt(amountStr, 10);
+    const amount = parseAmountInput(amountStr);
     if (!amount || amount <= 0) {
       setError("Masukkan nominal transaksi yang valid.");
       return;
@@ -243,11 +253,11 @@ export function QuickAddModal() {
             <div className="flex items-center justify-center gap-1.5">
               <span className="text-xl font-extrabold text-[#81A1C1] font-mono">Rp</span>
               <input
-                type="number"
+                type="text"
                 inputMode="numeric"
                 placeholder="0"
                 value={amountStr}
-                onChange={(e) => setAmountStr(e.target.value)}
+                onChange={handleAmountChange}
                 className="w-full text-center text-3xl sm:text-4xl font-extrabold bg-transparent text-[#ECEFF4] focus:outline-none placeholder-[#4C566A] font-mono"
                 autoFocus
               />
@@ -292,6 +302,33 @@ export function QuickAddModal() {
                   Reset
                 </button>
               )}
+            </div>
+          </div>
+
+          {/* Catatan & Tanggal (Moved ABOVE Wallets for effortless note taking) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[#D8DEE9] flex items-center gap-1 mb-1.5">
+                <StickyNote className="w-3.5 h-3.5 text-[#81A1C1]" /> Catatan (Keterangan)
+              </label>
+              <input
+                type="text"
+                placeholder="Contoh: Makan siang bareng"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full bg-[#242933] border border-[#434C5E] rounded-xl px-3 py-2 text-xs text-[#ECEFF4] focus:ring-2 focus:ring-[#88C0D0] focus:outline-none placeholder-[#4C566A]"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[#D8DEE9] flex items-center gap-1 mb-1.5">
+                <Calendar className="w-3.5 h-3.5 text-[#81A1C1]" /> Tanggal Transaksi
+              </label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full bg-[#242933] border border-[#434C5E] rounded-xl px-3 py-2 text-xs text-[#ECEFF4] focus:ring-2 focus:ring-[#88C0D0] focus:outline-none"
+              />
             </div>
           </div>
 
@@ -403,33 +440,6 @@ export function QuickAddModal() {
               </div>
             </div>
           )}
-
-          {/* Date and Notes */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-semibold text-[#D8DEE9] flex items-center gap-1 mb-1.5">
-                <Calendar className="w-3.5 h-3.5 text-[#81A1C1]" /> Tanggal
-              </label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-[#242933] border border-[#434C5E] rounded-xl px-3 py-2 text-xs text-[#ECEFF4] focus:ring-2 focus:ring-[#88C0D0] focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="text-xs font-semibold text-[#D8DEE9] flex items-center gap-1 mb-1.5">
-                <StickyNote className="w-3.5 h-3.5 text-[#81A1C1]" /> Catatan (Opsional)
-              </label>
-              <input
-                type="text"
-                placeholder="Contoh: Makan siang bareng"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="w-full bg-[#242933] border border-[#434C5E] rounded-xl px-3 py-2 text-xs text-[#ECEFF4] focus:ring-2 focus:ring-[#88C0D0] focus:outline-none placeholder-[#4C566A]"
-              />
-            </div>
-          </div>
 
           {/* Submit Button */}
           <button

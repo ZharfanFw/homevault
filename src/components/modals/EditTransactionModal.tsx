@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { X, ArrowLeftRight, Trash2 } from "lucide-react";
+import { X, Trash2, StickyNote, Calendar } from "lucide-react";
 import { CategoryIcon } from "@/lib/utils/icons";
-import { formatCurrency } from "@/lib/utils/format";
+import { parseAmountInput, formatAmountInput } from "@/lib/utils/format";
 
 export interface TransactionDetail {
   id: string;
@@ -37,7 +37,7 @@ export function EditTransactionModal({
   onDelete,
 }: EditTransactionModalProps) {
   const [type, setType] = useState<"EXPENSE" | "INCOME" | "TRANSFER">("EXPENSE");
-  const [amount, setAmount] = useState<number>(0);
+  const [amountStr, setAmountStr] = useState<string>("");
   const [walletId, setWalletId] = useState("");
   const [destinationWalletId, setDestinationWalletId] = useState("");
   const [categoryId, setCategoryId] = useState("");
@@ -71,7 +71,7 @@ export function EditTransactionModal({
   useEffect(() => {
     if (transaction && isOpen) {
       setType(transaction.type);
-      setAmount(transaction.amount);
+      setAmountStr(formatAmountInput(transaction.amount));
       setWalletId(transaction.walletId);
       setDestinationWalletId(transaction.destinationWalletId || "");
       setCategoryId(transaction.categoryId || "");
@@ -86,17 +86,29 @@ export function EditTransactionModal({
   const filteredCategories = categories.filter((c) => c.type === type);
 
   const handleAddAmount = (add: number) => {
-    setAmount((prev) => prev + add);
+    const current = parseAmountInput(amountStr);
+    const newAmount = current + add;
+    setAmountStr(newAmount > 0 ? formatAmountInput(newAmount) : "");
   };
 
-  const handleMultiply = (mult: number) => {
-    setAmount((prev) => prev * mult);
+  const handleAppendZeros = () => {
+    const current = parseAmountInput(amountStr);
+    if (!current) return;
+    const newAmount = current * 1000;
+    setAmountStr(formatAmountInput(newAmount));
+  };
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    const parsed = parseAmountInput(raw);
+    setAmountStr(raw ? formatAmountInput(parsed) : "");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
+    const amount = parseAmountInput(amountStr);
     if (!amount || amount <= 0) {
       setError("Masukkan nominal yang valid.");
       return;
@@ -197,7 +209,7 @@ export function EditTransactionModal({
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#242933]/80 backdrop-blur-md">
       <div
-        className="w-full max-w-lg bg-[#2E3440] border-t sm:border border-[#434C5E] rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl max-h-[90vh] overflow-y-auto no-scrollbar"
+        className="w-full max-w-lg bg-[#2E3440] border-t sm:border border-[#434C5E] rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl max-h-[92vh] overflow-y-auto no-scrollbar animate-in slide-in-from-bottom duration-200"
         style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom))" }}
       >
         {/* Header */}
@@ -270,66 +282,97 @@ export function EditTransactionModal({
           </div>
 
           {/* Amount Display & Input */}
-          <div>
-            <label className="text-[11px] font-semibold text-[#81A1C1] block mb-1">
-              Nominal
+          <div className="bg-[#242933] border border-[#434C5E] rounded-2xl p-4 text-center">
+            <label className="text-[11px] font-bold text-[#81A1C1] uppercase tracking-wider block mb-1">
+              Nominal Transaksi
             </label>
-            <div className="flex items-center gap-2 bg-[#242933] border border-[#434C5E] rounded-2xl px-4 py-3 focus-within:border-[#88C0D0] transition-colors">
-              <span className="text-base font-bold text-[#81A1C1] font-mono">Rp</span>
+            <div className="flex items-center justify-center gap-1.5">
+              <span className="text-xl font-extrabold text-[#81A1C1] font-mono">Rp</span>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 placeholder="0"
-                value={amount === 0 ? "" : amount}
-                onChange={(e) => setAmount(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                className="w-full bg-transparent text-xl sm:text-2xl font-extrabold text-[#ECEFF4] font-mono focus:outline-none placeholder-[#4C566A]"
-                required
+                value={amountStr}
+                onChange={handleAmountChange}
+                className="w-full text-center text-3xl sm:text-4xl font-extrabold bg-transparent text-[#ECEFF4] focus:outline-none placeholder-[#4C566A] font-mono"
               />
             </div>
 
             {/* Quick Add Chips */}
-            <div className="flex items-center gap-1.5 mt-2 overflow-x-auto no-scrollbar py-1">
+            <div className="flex items-center justify-center gap-1.5 mt-3 pt-3 border-t border-[#3B4252] flex-wrap">
               <button
                 type="button"
                 onClick={() => handleAddAmount(10000)}
-                className="shrink-0 px-2.5 py-1 text-[11px] font-mono font-bold bg-[#3B4252] hover:bg-[#434C5E] text-[#ECEFF4] rounded-lg border border-[#434C5E] tap-effect"
+                className="px-2.5 py-1 text-xs font-bold rounded-lg bg-[#3B4252] hover:bg-[#434C5E] text-[#D8DEE9] tap-effect"
               >
                 +10rb
               </button>
               <button
                 type="button"
                 onClick={() => handleAddAmount(50000)}
-                className="shrink-0 px-2.5 py-1 text-[11px] font-mono font-bold bg-[#3B4252] hover:bg-[#434C5E] text-[#ECEFF4] rounded-lg border border-[#434C5E] tap-effect"
+                className="px-2.5 py-1 text-xs font-bold rounded-lg bg-[#3B4252] hover:bg-[#434C5E] text-[#D8DEE9] tap-effect"
               >
                 +50rb
               </button>
               <button
                 type="button"
                 onClick={() => handleAddAmount(100000)}
-                className="shrink-0 px-2.5 py-1 text-[11px] font-mono font-bold bg-[#3B4252] hover:bg-[#434C5E] text-[#ECEFF4] rounded-lg border border-[#434C5E] tap-effect"
+                className="px-2.5 py-1 text-xs font-bold rounded-lg bg-[#3B4252] hover:bg-[#434C5E] text-[#D8DEE9] tap-effect"
               >
                 +100rb
               </button>
               <button
                 type="button"
-                onClick={() => handleMultiply(1000)}
-                className="shrink-0 px-2.5 py-1 text-[11px] font-mono font-bold bg-[#3B4252] hover:bg-[#434C5E] text-[#88C0D0] rounded-lg border border-[#434C5E] tap-effect"
+                onClick={handleAppendZeros}
+                className="px-2.5 py-1 text-xs font-extrabold rounded-lg bg-[#88C0D0]/20 hover:bg-[#88C0D0]/30 text-[#88C0D0] border border-[#88C0D0]/30 tap-effect font-mono"
               >
                 000
               </button>
-              <button
-                type="button"
-                onClick={() => setAmount(0)}
-                className="shrink-0 px-2.5 py-1 text-[11px] font-bold bg-[#BF616A]/20 hover:bg-[#BF616A]/30 text-[#BF616A] rounded-lg border border-[#BF616A]/30 tap-effect ml-auto"
-              >
-                Reset
-              </button>
+              {amountStr && (
+                <button
+                  type="button"
+                  onClick={() => setAmountStr("")}
+                  className="px-2 py-1 text-xs font-bold rounded-lg bg-[#BF616A]/20 text-[#BF616A] tap-effect"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Catatan & Tanggal (Moved ABOVE Wallets for effortless writing) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[#D8DEE9] flex items-center gap-1 mb-1.5">
+                <StickyNote className="w-3.5 h-3.5 text-[#81A1C1]" /> Catatan (Keterangan)
+              </label>
+              <input
+                type="text"
+                placeholder="Contoh: Makan siang bareng"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                className="w-full bg-[#242933] border border-[#434C5E] rounded-xl px-3 py-2 text-xs text-[#ECEFF4] focus:ring-2 focus:ring-[#88C0D0] focus:outline-none placeholder-[#4C566A]"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-[#D8DEE9] flex items-center gap-1 mb-1.5">
+                <Calendar className="w-3.5 h-3.5 text-[#81A1C1]" /> Tanggal Transaksi
+              </label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="w-full bg-[#242933] border border-[#434C5E] rounded-xl px-3 py-2 text-xs text-[#ECEFF4] focus:ring-2 focus:ring-[#88C0D0] focus:outline-none"
+                required
+              />
             </div>
           </div>
 
           {/* Wallets Selection */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="text-[11px] font-semibold text-[#81A1C1] block mb-1">
+              <label className="text-xs font-semibold text-[#D8DEE9] block mb-1.5">
                 {type === "TRANSFER" ? "Dompet Asal" : "Dompet"}
               </label>
               <select
@@ -349,7 +392,7 @@ export function EditTransactionModal({
 
             {type === "TRANSFER" && (
               <div>
-                <label className="text-[11px] font-semibold text-[#81A1C1] block mb-1">
+                <label className="text-xs font-semibold text-[#D8DEE9] block mb-1.5">
                   Dompet Tujuan
                 </label>
                 <select
@@ -374,10 +417,10 @@ export function EditTransactionModal({
           {/* Category Selector (Expense & Income) */}
           {type !== "TRANSFER" && (
             <div>
-              <label className="text-[11px] font-semibold text-[#81A1C1] block mb-1.5">
+              <label className="text-xs font-semibold text-[#D8DEE9] block mb-1.5">
                 Kategori
               </label>
-              <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 max-h-40 overflow-y-auto p-1 bg-[#242933] border border-[#434C5E] rounded-2xl no-scrollbar">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 max-h-36 overflow-y-auto no-scrollbar p-0.5">
                 {filteredCategories.map((c) => {
                   const isSelected = categoryId === c.id;
                   return (
@@ -385,10 +428,10 @@ export function EditTransactionModal({
                       key={c.id}
                       type="button"
                       onClick={() => setCategoryId(c.id)}
-                      className={`flex flex-col items-center gap-1 p-2 rounded-xl border text-center transition-all tap-effect ${
+                      className={`flex items-center gap-2 p-2 rounded-xl border text-left tap-effect transition-all ${
                         isSelected
-                          ? "bg-[#3B4252] border-[#88C0D0] shadow-sm"
-                          : "bg-[#2E3440]/50 border-transparent hover:border-[#434C5E]"
+                          ? "bg-[#88C0D0]/20 border-[#88C0D0] text-[#ECEFF4] ring-1 ring-[#88C0D0]"
+                          : "bg-[#242933] border-[#434C5E] text-[#D8DEE9] hover:border-[#81A1C1]"
                       }`}
                     >
                       <div
@@ -397,7 +440,7 @@ export function EditTransactionModal({
                       >
                         <CategoryIcon name={c.icon} className="w-3.5 h-3.5" />
                       </div>
-                      <span className="text-[10px] font-medium text-[#ECEFF4] truncate max-w-full">
+                      <span className="text-xs font-semibold truncate">
                         {c.name}
                       </span>
                     </button>
@@ -406,35 +449,6 @@ export function EditTransactionModal({
               </div>
             </div>
           )}
-
-          {/* Date & Notes */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="text-[11px] font-semibold text-[#81A1C1] block mb-1">
-                Tanggal
-              </label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-[#242933] border border-[#434C5E] rounded-xl px-3 py-2 text-xs text-[#ECEFF4] focus:ring-2 focus:ring-[#88C0D0] focus:outline-none"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="text-[11px] font-semibold text-[#81A1C1] block mb-1">
-                Catatan (Opsional)
-              </label>
-              <input
-                type="text"
-                placeholder="Contoh: Makan siang bareng"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="w-full bg-[#242933] border border-[#434C5E] rounded-xl px-3 py-2 text-xs text-[#ECEFF4] focus:ring-2 focus:ring-[#88C0D0] focus:outline-none placeholder-[#4C566A]"
-              />
-            </div>
-          </div>
 
           {/* Action Buttons */}
           <div className="flex gap-2 pt-2">
@@ -451,7 +465,7 @@ export function EditTransactionModal({
             <button
               type="submit"
               disabled={isLoading || isDeleting}
-              className="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-[#5E81AC] to-[#88C0D0] hover:brightness-110 text-[#2E3440] font-extrabold text-xs shadow-lg shadow-[#88C0D0]/25 tap-effect flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 transition-all"
+              className="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-[#5E81AC] to-[#88C0D0] hover:from-[#4C566A] hover:to-[#81A1C1] text-[#2E3440] font-extrabold text-xs shadow-lg shadow-[#88C0D0]/25 tap-effect flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 transition-all"
             >
               {isLoading ? (
                 <div className="w-4 h-4 border-2 border-[#2E3440]/30 border-t-[#2E3440] rounded-full animate-spin" />

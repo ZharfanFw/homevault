@@ -95,3 +95,25 @@ export function getShortMonthName(monthIndex: number): string {
   ];
   return months[monthIndex] || "";
 }
+
+/**
+ * Sanitizes numeric input string by stripping dots, commas, spaces, etc.
+ * Handles inputs like "50.000", "50,000", "1.500.000", "50000".
+ */
+export function parseAmountInput(input: string | number | null | undefined): number {
+  if (input === null || input === undefined) return 0;
+  if (typeof input === "number") return isNaN(input) ? 0 : Math.max(0, Math.floor(input));
+  if (typeof input !== "string") return 0;
+  const cleaned = input.replace(/[^\d]/g, "");
+  return parseInt(cleaned, 10) || 0;
+}
+
+/**
+ * Formats a raw number or numeric string to Indonesian thousand-separated string
+ * e.g. 50000 -> "50.000"
+ */
+export function formatAmountInput(value: number | string | null | undefined): string {
+  const num = parseAmountInput(value);
+  if (!num) return "";
+  return new Intl.NumberFormat("id-ID").format(num);
+}

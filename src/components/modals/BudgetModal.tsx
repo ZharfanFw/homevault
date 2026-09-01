@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { X } from "lucide-react";
 import { CategoryIcon } from "@/lib/utils/icons";
+import { parseAmountInput, formatAmountInput } from "@/lib/utils/format";
 
 interface BudgetModalProps {
   isOpen: boolean;
@@ -43,7 +44,7 @@ export function BudgetModal({
   useEffect(() => {
     if (existingBudget) {
       setCategoryId(existingBudget.categoryId);
-      setAmountLimit(existingBudget.amountLimit.toString());
+      setAmountLimit(formatAmountInput(existingBudget.amountLimit));
     } else {
       if (expenseCategories.length > 0) {
         setCategoryId(expenseCategories[0].id);
@@ -59,7 +60,7 @@ export function BudgetModal({
     e.preventDefault();
     setError("");
 
-    const parsedLimit = parseInt(amountLimit, 10);
+    const parsedLimit = parseAmountInput(amountLimit);
     if (!parsedLimit || parsedLimit <= 0) {
       setError("Masukkan batas anggaran yang valid.");
       return;
@@ -145,10 +146,15 @@ export function BudgetModal({
               Batas Anggaran Bulanan (Rp)
             </label>
             <input
-              type="number"
-              placeholder="Contoh: 1500000"
+              type="text"
+              inputMode="numeric"
+              placeholder="Contoh: 1.500.000"
               value={amountLimit}
-              onChange={(e) => setAmountLimit(e.target.value)}
+              onChange={(e) => {
+                const raw = e.target.value;
+                const parsed = parseAmountInput(raw);
+                setAmountLimit(raw ? formatAmountInput(parsed) : "");
+              }}
               className="w-full bg-[#242933] border border-[#434C5E] rounded-xl px-3 py-2 text-xs text-[#ECEFF4] focus:ring-2 focus:ring-[#88C0D0] focus:outline-none font-mono"
               required
             />

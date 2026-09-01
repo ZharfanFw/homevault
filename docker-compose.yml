@@ -1,5 +1,6 @@
 services:
   finance-tracker:
+    image: ghcr.io/zharfanfw/homevault:latest
     build:
       context: .
       dockerfile: Dockerfile

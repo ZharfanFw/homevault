@@ -3,7 +3,7 @@
 import React from "react";
 import { formatCurrency, formatDate } from "@/lib/utils/format";
 import { CategoryIcon } from "@/lib/utils/icons";
-import { ArrowLeftRight, Trash2, ChevronRight } from "lucide-react";
+import { ArrowLeftRight, Trash2, Edit2, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 export interface TransactionItem {
@@ -12,6 +12,9 @@ export interface TransactionItem {
   amount: number;
   date: string;
   notes?: string | null;
+  walletId?: string;
+  destinationWalletId?: string | null;
+  categoryId?: string | null;
   walletName?: string | null;
   walletColor?: string | null;
   destinationWalletName?: string | null;
@@ -23,12 +26,14 @@ export interface TransactionItem {
 
 interface RecentTransactionsProps {
   transactions: TransactionItem[];
+  onEditTransaction?: (tx: TransactionItem) => void;
   onDeleteTransaction?: (id: string) => void;
   showAllLink?: boolean;
 }
 
 export function RecentTransactions({
   transactions,
+  onEditTransaction,
   onDeleteTransaction,
   showAllLink = true,
 }: RecentTransactionsProps) {
@@ -71,7 +76,8 @@ export function RecentTransactions({
             return (
               <div
                 key={tx.id}
-                className="group flex items-center justify-between p-3.5 rounded-2xl bg-[#2E3440] border border-[#434C5E]/70 hover:border-[#81A1C1] shadow-sm transition-all"
+                onClick={() => onEditTransaction && onEditTransaction(tx)}
+                className="group flex items-center justify-between p-3.5 rounded-2xl bg-[#2E3440] border border-[#434C5E]/70 hover:border-[#81A1C1] shadow-sm transition-all cursor-pointer tap-effect"
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <div
@@ -120,15 +126,28 @@ export function RecentTransactions({
                     {formatCurrency(tx.amount)}
                   </span>
 
-                  {onDeleteTransaction && (
-                    <button
-                      onClick={() => onDeleteTransaction(tx.id)}
-                      className="p-1.5 text-[#D8DEE9]/40 hover:text-[#BF616A] rounded-lg opacity-0 group-hover:opacity-100 hover:bg-[#3B4252] transition-all tap-effect"
-                      aria-label="Hapus Transaksi"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  )}
+                  <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                    {onEditTransaction && (
+                      <button
+                        onClick={() => onEditTransaction(tx)}
+                        className="p-1.5 text-[#D8DEE9]/60 hover:text-[#88C0D0] rounded-lg hover:bg-[#3B4252] transition-all tap-effect"
+                        aria-label="Ubah Transaksi"
+                        title="Ubah"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                    {onDeleteTransaction && (
+                      <button
+                        onClick={() => onDeleteTransaction(tx.id)}
+                        className="p-1.5 text-[#D8DEE9]/60 hover:text-[#BF616A] rounded-lg hover:bg-[#3B4252] transition-all tap-effect"
+                        aria-label="Hapus Transaksi"
+                        title="Hapus"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );

@@ -96,11 +96,10 @@ export default function AuthPage() {
                 setMode("login");
                 setError("");
               }}
-              className={`py-2 text-xs font-bold rounded-xl tap-effect transition-all ${
-                mode === "login"
+              className={`py-2 text-xs font-bold rounded-xl tap-effect transition-all ${mode === "login"
                   ? "bg-[#88C0D0] text-[#2E3440] shadow-sm"
                   : "text-[#D8DEE9]/70 hover:text-[#ECEFF4]"
-              }`}
+                }`}
             >
               Masuk
             </button>
@@ -113,13 +112,12 @@ export default function AuthPage() {
                   setError("");
                 }
               }}
-              className={`py-2 text-xs font-bold rounded-xl tap-effect transition-all ${
-                mode === "register"
+              className={`py-2 text-xs font-bold rounded-xl tap-effect transition-all ${mode === "register"
                   ? "bg-[#88C0D0] text-[#2E3440] shadow-sm"
                   : !registrationAllowed
-                  ? "text-[#4C566A] cursor-not-allowed"
-                  : "text-[#D8DEE9]/70 hover:text-[#ECEFF4]"
-              }`}
+                    ? "text-[#4C566A] cursor-not-allowed"
+                    : "text-[#D8DEE9]/70 hover:text-[#ECEFF4]"
+                }`}
             >
               Daftar Baru
             </button>

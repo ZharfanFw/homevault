@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/session";
 import { db, transactions, wallets, categories } from "@/lib/db";
-import { eq, and, gte, lte, desc } from "drizzle-orm";
+import { eq, and, gte, lte, desc, sql } from "drizzle-orm";
 
 export async function GET(req: Request) {
   try {
@@ -146,7 +146,7 @@ export async function GET(req: Request) {
     const dailyTrends = Object.values(dailyMap);
 
     // 3. Fetch recent 5 transactions
-    const recentTransactions = db
+    const rawRecent = db
       .select({
         id: transactions.id,
         walletId: transactions.walletId,
@@ -170,6 +170,37 @@ export async function GET(req: Request) {
       .orderBy(desc(transactions.date), desc(transactions.createdAt))
       .limit(5)
       .all();
+
+    const destIds = rawRecent
+      .filter((t) => t.type === "TRANSFER" && t.destinationWalletId)
+      .map((t) => t.destinationWalletId as string);
+
+    let destMap: Record<string, string> = {};
+    if (destIds.length > 0) {
+      const dWallets = db
+        .select({ id: wallets.id, name: wallets.name })
+        .from(wallets)
+        .where(
+          and(
+            eq(wallets.userId, user.id),
+            sql`${wallets.id} IN (${sql.join(
+              destIds.map((id) => sql`${id}`),
+              sql`, `
+            )})`
+          )
+        )
+        .all();
+      for (const dw of dWallets) {
+        destMap[dw.id] = dw.name;
+      }
+    }
+
+    const recentTransactions = rawRecent.map((t) => ({
+      ...t,
+      destinationWalletName: t.destinationWalletId
+        ? destMap[t.destinationWalletId] || null
+        : null,
+    }));
 
     return NextResponse.json({
       month,

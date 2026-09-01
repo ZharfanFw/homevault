@@ -13,6 +13,7 @@ import {
   CategoryBreakdownItem,
 } from "@/components/analytics/ExpenseCategoryBreakdown";
 import { WalletModal } from "@/components/modals/WalletModal";
+import { EditTransactionModal } from "@/components/modals/EditTransactionModal";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
@@ -22,7 +23,6 @@ export default function DashboardPage() {
     selectedYear,
     refreshTrigger,
     triggerRefresh,
-    openQuickAdd,
   } = useApp();
 
   const [isLoading, setIsLoading] = useState(true);
@@ -39,6 +39,8 @@ export default function DashboardPage() {
   const [wallets, setWallets] = useState<WalletItem[]>([]);
 
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
+  const [selectedTxForEdit, setSelectedTxForEdit] = useState<TransactionItem | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const fetchDashboardData = useCallback(async () => {
     try {
@@ -74,6 +76,11 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchDashboardData();
   }, [fetchDashboardData, refreshTrigger]);
+
+  const handleEditTransaction = (tx: TransactionItem) => {
+    setSelectedTxForEdit(tx);
+    setIsEditModalOpen(true);
+  };
 
   const handleDeleteTransaction = async (id: string) => {
     if (!confirm("Hapus transaksi ini?")) return;
@@ -127,6 +134,7 @@ export default function DashboardPage() {
       {/* Recent Transactions List */}
       <RecentTransactions
         transactions={recentTransactions}
+        onEditTransaction={handleEditTransaction}
         onDeleteTransaction={handleDeleteTransaction}
       />
 
@@ -134,6 +142,17 @@ export default function DashboardPage() {
       <WalletModal
         isOpen={isWalletModalOpen}
         onClose={() => setIsWalletModalOpen(false)}
+        onSuccess={() => triggerRefresh()}
+      />
+
+      {/* Edit Transaction Modal */}
+      <EditTransactionModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedTxForEdit(null);
+        }}
+        transaction={selectedTxForEdit as any}
         onSuccess={() => triggerRefresh()}
       />
     </div>

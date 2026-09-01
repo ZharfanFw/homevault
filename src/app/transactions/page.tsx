@@ -2,12 +2,14 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useApp } from "@/context/AppContext";
-import { formatCurrency, formatDate, formatFullDate } from "@/lib/utils/format";
+import { formatCurrency, formatFullDate } from "@/lib/utils/format";
 import { CategoryIcon } from "@/lib/utils/icons";
+import { EditTransactionModal } from "@/components/modals/EditTransactionModal";
 import {
   Search,
   ArrowLeftRight,
   Trash2,
+  Edit2,
   X,
 } from "lucide-react";
 
@@ -20,6 +22,7 @@ interface TransactionItem {
   walletId: string;
   walletName?: string | null;
   walletColor?: string | null;
+  destinationWalletId?: string | null;
   destinationWalletName?: string | null;
   destinationWalletColor?: string | null;
   categoryId?: string | null;
@@ -39,6 +42,9 @@ export default function TransactionsPage() {
   const [selectedType, setSelectedType] = useState<string>("");
   const [selectedWalletId, setSelectedWalletId] = useState<string>("");
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
+
+  const [selectedTxForEdit, setSelectedTxForEdit] = useState<TransactionItem | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const fetchTransactions = useCallback(async () => {
     try {
@@ -84,6 +90,11 @@ export default function TransactionsPage() {
     fetchTransactions();
   }, [fetchTransactions, refreshTrigger]);
 
+  const handleEdit = (tx: TransactionItem) => {
+    setSelectedTxForEdit(tx);
+    setIsEditModalOpen(true);
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm("Hapus transaksi ini?")) return;
     try {
@@ -116,7 +127,7 @@ export default function TransactionsPage() {
           Riwayat Transaksi
         </h2>
         <p className="text-xs text-[#81A1C1] mt-0.5 font-medium">
-          Daftar seluruh mutasi keuangan Anda
+          Daftar seluruh mutasi keuangan Anda (klik untuk mengubah)
         </p>
       </div>
 
@@ -247,7 +258,8 @@ export default function TransactionsPage() {
                     return (
                       <div
                         key={tx.id}
-                        className="group flex items-center justify-between p-3.5 rounded-2xl bg-[#2E3440] border border-[#434C5E]/80 hover:border-[#81A1C1] shadow-sm transition-all"
+                        onClick={() => handleEdit(tx)}
+                        className="group flex items-center justify-between p-3.5 rounded-2xl bg-[#2E3440] border border-[#434C5E]/80 hover:border-[#81A1C1] shadow-sm transition-all cursor-pointer tap-effect"
                       >
                         <div className="flex items-center gap-3 min-w-0">
                           <div
@@ -297,13 +309,24 @@ export default function TransactionsPage() {
                             {formatCurrency(tx.amount)}
                           </span>
 
-                          <button
-                            onClick={() => handleDelete(tx.id)}
-                            className="p-1.5 text-[#D8DEE9]/40 hover:text-[#BF616A] rounded-lg opacity-0 group-hover:opacity-100 hover:bg-[#3B4252] transition-all tap-effect"
-                            aria-label="Hapus Transaksi"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                            <button
+                              onClick={() => handleEdit(tx)}
+                              className="p-1.5 text-[#D8DEE9]/60 hover:text-[#88C0D0] rounded-lg hover:bg-[#3B4252] transition-all tap-effect"
+                              aria-label="Ubah Transaksi"
+                              title="Ubah"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(tx.id)}
+                              className="p-1.5 text-[#D8DEE9]/60 hover:text-[#BF616A] rounded-lg hover:bg-[#3B4252] transition-all tap-effect"
+                              aria-label="Hapus Transaksi"
+                              title="Hapus"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -314,6 +337,17 @@ export default function TransactionsPage() {
           })}
         </div>
       )}
+
+      {/* Edit Transaction Modal */}
+      <EditTransactionModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedTxForEdit(null);
+        }}
+        transaction={selectedTxForEdit as any}
+        onSuccess={() => triggerRefresh()}
+      />
     </div>
   );
 }

@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useApp } from "@/context/AppContext";
 import { formatCurrency, formatFullDate } from "@/lib/utils/format";
 import { CategoryIcon } from "@/lib/utils/icons";
-import { EditTransactionModal } from "@/components/modals/EditTransactionModal";
+import { EditTransactionModal, TransactionDetail } from "@/components/modals/EditTransactionModal";
 import {
   Search,
   ArrowLeftRight,
@@ -345,7 +345,7 @@ export default function TransactionsPage() {
           setIsEditModalOpen(false);
           setSelectedTxForEdit(null);
         }}
-        transaction={selectedTxForEdit as any}
+        transaction={selectedTxForEdit ? (selectedTxForEdit as unknown as TransactionDetail) : null}
         onSuccess={() => triggerRefresh()}
       />
     </div>

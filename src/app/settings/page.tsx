@@ -6,6 +6,7 @@ import { formatCurrency, getMonthName } from "@/lib/utils/format";
 import { CategoryIcon } from "@/lib/utils/icons";
 import { CategoryModal } from "@/components/modals/CategoryModal";
 import { BudgetModal } from "@/components/modals/BudgetModal";
+import Link from "next/link";
 import {
   ShieldCheck,
   Download,
@@ -15,6 +16,10 @@ import {
   Trash2,
   Lock,
   Unlock,
+  Repeat,
+  Target,
+  CreditCard,
+  ChevronRight,
 } from "lucide-react";
 
 interface CategoryItem {
@@ -107,7 +112,7 @@ export default function SettingsPage() {
     } catch (e) {
       console.error("Settings load data error:", e);
     }
-  }, [selectedMonth, selectedYear, user?.isAdmin]);
+  }, [selectedMonth, selectedYear, user]);
 
   useEffect(() => {
     loadData();
@@ -241,6 +246,73 @@ export default function SettingsPage() {
                 </p>
               </div>
             </div>
+          </div>
+
+          {/* Financial Modules Shortcuts */}
+          <div className="p-4 rounded-3xl bg-[#2E3440] border border-[#434C5E] shadow-sm space-y-1">
+            <h4 className="text-[11px] font-bold text-[#81A1C1] uppercase tracking-wider px-2 py-1 mb-1">
+              Modul Finansial Lanjutan
+            </h4>
+
+            <Link
+              href="/recurring"
+              className="flex items-center justify-between p-3 rounded-2xl hover:bg-[#3B4252]/60 tap-effect transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#88C0D0]/15 text-[#88C0D0] flex items-center justify-center">
+                  <Repeat className="w-4 h-4 stroke-[2.2]" />
+                </div>
+                <div>
+                  <h5 className="text-xs font-bold text-[#ECEFF4]">
+                    Transaksi Berulang & Tagihan
+                  </h5>
+                  <p className="text-[11px] text-[#81A1C1]">
+                    Kelola langganan rutin dan pengingat jatuh tempo
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#81A1C1]" />
+            </Link>
+
+            <Link
+              href="/goals"
+              className="flex items-center justify-between p-3 rounded-2xl hover:bg-[#3B4252]/60 tap-effect transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#A3BE8C]/15 text-[#A3BE8C] flex items-center justify-center">
+                  <Target className="w-4 h-4 stroke-[2.2]" />
+                </div>
+                <div>
+                  <h5 className="text-xs font-bold text-[#ECEFF4]">
+                    Target Tabungan & Dana Darurat
+                  </h5>
+                  <p className="text-[11px] text-[#81A1C1]">
+                    Rencanakan pos tabungan impian & sinking funds
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#81A1C1]" />
+            </Link>
+
+            <Link
+              href="/debts"
+              className="flex items-center justify-between p-3 rounded-2xl hover:bg-[#3B4252]/60 tap-effect transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#BF616A]/15 text-[#BF616A] flex items-center justify-center">
+                  <CreditCard className="w-4 h-4 stroke-[2.2]" />
+                </div>
+                <div>
+                  <h5 className="text-xs font-bold text-[#ECEFF4]">
+                    Catatan Utang & Piutang
+                  </h5>
+                  <p className="text-[11px] text-[#81A1C1]">
+                    Pantau kewajiban dan cicilan pelunasan pinjaman
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-[#81A1C1]" />
+            </Link>
           </div>
 
           {/* Export CSV Card */}

@@ -13,8 +13,8 @@ import {
   CategoryBreakdownItem,
 } from "@/components/analytics/ExpenseCategoryBreakdown";
 import { WalletModal } from "@/components/modals/WalletModal";
-import { EditTransactionModal } from "@/components/modals/EditTransactionModal";
-import { ChevronRight } from "lucide-react";
+import { EditTransactionModal, TransactionDetail } from "@/components/modals/EditTransactionModal";
+import { ChevronRight, Repeat, Target, CreditCard } from "lucide-react";
 import Link from "next/link";
 
 export default function DashboardPage() {
@@ -110,6 +110,61 @@ export default function DashboardPage() {
         onAddWallet={() => setIsWalletModalOpen(true)}
       />
 
+      {/* 3 Core Financial Modules Quick Access */}
+      <div className="mt-6">
+        <div className="flex items-center justify-between mb-3 px-1">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-[#81A1C1]">
+            Modul Finansial
+          </h3>
+        </div>
+        <div className="grid grid-cols-3 gap-2.5">
+          <Link
+            href="/recurring"
+            className="p-3.5 rounded-2xl bg-[#2E3440] border border-[#434C5E] hover:border-[#88C0D0]/50 shadow-sm flex flex-col items-center text-center tap-effect transition-all group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#88C0D0]/15 text-[#88C0D0] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+              <Repeat className="w-5 h-5 stroke-[2.2]" />
+            </div>
+            <span className="text-xs font-bold text-[#ECEFF4] leading-tight block">
+              Tagihan Rutin
+            </span>
+            <span className="text-[10px] text-[#81A1C1] mt-0.5 font-medium block">
+              Langganan
+            </span>
+          </Link>
+
+          <Link
+            href="/goals"
+            className="p-3.5 rounded-2xl bg-[#2E3440] border border-[#434C5E] hover:border-[#A3BE8C]/50 shadow-sm flex flex-col items-center text-center tap-effect transition-all group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#A3BE8C]/15 text-[#A3BE8C] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+              <Target className="w-5 h-5 stroke-[2.2]" />
+            </div>
+            <span className="text-xs font-bold text-[#ECEFF4] leading-tight block">
+              Target Nabung
+            </span>
+            <span className="text-[10px] text-[#81A1C1] mt-0.5 font-medium block">
+              Sinking Funds
+            </span>
+          </Link>
+
+          <Link
+            href="/debts"
+            className="p-3.5 rounded-2xl bg-[#2E3440] border border-[#434C5E] hover:border-[#BF616A]/50 shadow-sm flex flex-col items-center text-center tap-effect transition-all group"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#BF616A]/15 text-[#BF616A] flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+              <CreditCard className="w-5 h-5 stroke-[2.2]" />
+            </div>
+            <span className="text-xs font-bold text-[#ECEFF4] leading-tight block">
+              Utang Piutang
+            </span>
+            <span className="text-[10px] text-[#81A1C1] mt-0.5 font-medium block">
+              Cicilan
+            </span>
+          </Link>
+        </div>
+      </div>
+
       {/* Category Expense Breakdown (Top 4) */}
       {categoryBreakdown.length > 0 && (
         <div className="mt-6">
@@ -152,7 +207,7 @@ export default function DashboardPage() {
           setIsEditModalOpen(false);
           setSelectedTxForEdit(null);
         }}
-        transaction={selectedTxForEdit as any}
+        transaction={selectedTxForEdit ? (selectedTxForEdit as unknown as TransactionDetail) : null}
         onSuccess={() => triggerRefresh()}
       />
     </div>

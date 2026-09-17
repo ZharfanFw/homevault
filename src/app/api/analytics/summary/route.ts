@@ -175,7 +175,7 @@ export async function GET(req: Request) {
       .filter((t) => t.type === "TRANSFER" && t.destinationWalletId)
       .map((t) => t.destinationWalletId as string);
 
-    let destMap: Record<string, string> = {};
+    const destMap: Record<string, string> = {};
     if (destIds.length > 0) {
       const dWallets = db
         .select({ id: wallets.id, name: wallets.name })

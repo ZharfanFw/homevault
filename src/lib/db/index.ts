@@ -96,12 +96,99 @@ sqlite.exec(`
     created_at INTEGER NOT NULL
   );
 
+  CREATE TABLE IF NOT EXISTS recurring_transactions (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    wallet_id TEXT NOT NULL REFERENCES wallets(id) ON DELETE CASCADE,
+    category_id TEXT REFERENCES categories(id) ON DELETE SET NULL,
+    name TEXT NOT NULL,
+    type TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    frequency TEXT NOT NULL DEFAULT 'MONTHLY',
+    start_date TEXT NOT NULL,
+    next_due_date TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'ACTIVE',
+    auto_create INTEGER NOT NULL DEFAULT 0,
+    notes TEXT,
+    last_processed_date TEXT,
+    created_at INTEGER NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS recurring_logs (
+    id TEXT PRIMARY KEY,
+    recurring_id TEXT NOT NULL REFERENCES recurring_transactions(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    due_date TEXT NOT NULL,
+    paid_date TEXT,
+    transaction_id TEXT REFERENCES transactions(id) ON DELETE SET NULL,
+    status TEXT NOT NULL DEFAULT 'PENDING',
+    amount INTEGER NOT NULL,
+    created_at INTEGER NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS savings_goals (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    target_wallet_id TEXT REFERENCES wallets(id) ON DELETE SET NULL,
+    name TEXT NOT NULL,
+    target_amount INTEGER NOT NULL,
+    current_amount INTEGER NOT NULL DEFAULT 0,
+    target_date TEXT,
+    color TEXT NOT NULL DEFAULT '#88C0D0',
+    icon TEXT NOT NULL DEFAULT 'piggy-bank',
+    status TEXT NOT NULL DEFAULT 'IN_PROGRESS',
+    created_at INTEGER NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS savings_allocation_logs (
+    id TEXT PRIMARY KEY,
+    goal_id TEXT NOT NULL REFERENCES savings_goals(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    wallet_id TEXT NOT NULL REFERENCES wallets(id) ON DELETE CASCADE,
+    transaction_id TEXT REFERENCES transactions(id) ON DELETE SET NULL,
+    type TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    date TEXT NOT NULL,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS debts_loans (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type TEXT NOT NULL,
+    person_name TEXT NOT NULL,
+    total_amount INTEGER NOT NULL,
+    remaining_amount INTEGER NOT NULL,
+    start_date TEXT NOT NULL,
+    due_date TEXT,
+    status TEXT NOT NULL DEFAULT 'UNPAID',
+    notes TEXT,
+    created_at INTEGER NOT NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS debt_repayments (
+    id TEXT PRIMARY KEY,
+    debt_id TEXT NOT NULL REFERENCES debts_loans(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    wallet_id TEXT NOT NULL REFERENCES wallets(id) ON DELETE CASCADE,
+    transaction_id TEXT REFERENCES transactions(id) ON DELETE SET NULL,
+    amount INTEGER NOT NULL,
+    payment_date TEXT NOT NULL,
+    notes TEXT,
+    created_at INTEGER NOT NULL
+  );
+
   CREATE INDEX IF NOT EXISTS idx_transactions_user_date ON transactions(user_id, date);
   CREATE INDEX IF NOT EXISTS idx_transactions_wallet ON transactions(wallet_id);
   CREATE INDEX IF NOT EXISTS idx_transactions_category ON transactions(category_id);
   CREATE INDEX IF NOT EXISTS idx_categories_user ON categories(user_id);
   CREATE INDEX IF NOT EXISTS idx_wallets_user ON wallets(user_id);
   CREATE INDEX IF NOT EXISTS idx_budgets_user_period ON budgets(user_id, month, year);
+  CREATE INDEX IF NOT EXISTS idx_recurring_user ON recurring_transactions(user_id);
+  CREATE INDEX IF NOT EXISTS idx_recurring_due ON recurring_transactions(next_due_date);
+  CREATE INDEX IF NOT EXISTS idx_goals_user ON savings_goals(user_id);
+  CREATE INDEX IF NOT EXISTS idx_debts_user ON debts_loans(user_id);
 `);
 
 if (process.env.NODE_ENV !== "production") {

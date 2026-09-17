@@ -1,9 +1,18 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { Sparkles, Shield, ChevronRight, CheckCircle2 } from "lucide-react";
 import { CoinTier, CoinTierDetails } from "@/lib/gamification/coinEngine";
 import { formatCurrency } from "@/lib/utils/format";
+
+const COIN_IMAGES: Record<CoinTier, string> = {
+  raw_iron: "/images/gamification/coin_raw_iron.png",
+  bronze: "/images/gamification/coin_bronze.png",
+  sterling_silver: "/images/gamification/coin_silver.png",
+  nordic_amber: "/images/gamification/coin_amber.png",
+  nordic_crystal: "/images/gamification/coin_crystal.png",
+};
 
 export interface MintedCoinCardProps {
   goal: {
@@ -78,13 +87,20 @@ export function MintedCoinCard({ goal, onAllocate }: MintedCoinCardProps) {
       <div className="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 rounded-full blur-3xl opacity-20 pointer-events-none bg-gradient-to-tr from-transparent to-[#88C0D0]" />
 
       <div className="flex items-start justify-between gap-3 relative z-10">
-        {/* Coin Avatar / Physical Emblem */}
+        {/* Coin Avatar / Pixel Art Sprite */}
         <div className="flex items-center gap-3.5">
           <div
-            className={`w-14 h-14 rounded-2xl bg-gradient-to-tr ${style.bg} p-0.5 shadow-md flex items-center justify-center ring-2 ring-[#ECEFF4]/10 transform transition-transform hover:rotate-6`}
+            className={`w-14 h-14 rounded-2xl bg-gradient-to-tr ${style.bg} p-0.5 shadow-md flex items-center justify-center ring-2 ring-[#ECEFF4]/10 transform transition-transform hover:scale-105`}
           >
-            <div className="w-full h-full rounded-[14px] bg-[#2E3440]/70 backdrop-blur-sm flex flex-col items-center justify-center">
-              <span className="text-2xl select-none">{coinDetails.symbol}</span>
+            <div className="w-full h-full rounded-[14px] bg-[#2E3440]/80 backdrop-blur-sm flex items-center justify-center p-1 relative overflow-hidden">
+              <Image
+                src={COIN_IMAGES[goal.coinTier] || COIN_IMAGES.raw_iron}
+                alt={coinDetails.name}
+                width={48}
+                height={48}
+                className="w-full h-full object-contain filter drop-shadow-md select-none"
+                style={{ imageRendering: "pixelated" }}
+              />
             </div>
           </div>
 

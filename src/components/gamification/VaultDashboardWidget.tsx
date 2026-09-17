@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { Shield, ChevronRight, Flame, AlertCircle } from "lucide-react";
+import Image from "next/image";
+import { ChevronRight, Flame, AlertCircle } from "lucide-react";
 import { useApp } from "@/context/AppContext";
 
 export function VaultDashboardWidget() {
@@ -77,9 +78,16 @@ export function VaultDashboardWidget() {
 
       {/* Header */}
       <div className="flex items-center justify-between relative z-10">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#5E81AC] to-[#88C0D0] flex items-center justify-center text-[#2E3440] shadow-sm font-bold text-xs">
-            ✨
+        <div className="flex items-center gap-2.5">
+          <div className="w-9 h-9 rounded-xl bg-[#242933] border border-[#88C0D0]/40 flex items-center justify-center p-1 shadow-sm">
+            <Image
+              src="/images/gamification/frost_shard.png"
+              alt="Vault"
+              width={28}
+              height={28}
+              className="object-contain filter drop-shadow-sm select-none"
+              style={{ imageRendering: "pixelated" }}
+            />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
@@ -114,51 +122,77 @@ export function VaultDashboardWidget() {
       ) : (
         <div className="mt-3.5 grid grid-cols-2 gap-2.5 relative z-10">
           {/* Frost Shards & Streak */}
-          <div className="p-3 rounded-xl bg-[#242933]/80 border border-[#434C5E]/50 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-[#81A1C1]">Frost Shards</span>
-              {frostData && frostData.currentStreak > 0 && (
-                <span className="inline-flex items-center gap-0.5 text-[10px] font-extrabold text-[#EBCB8B] bg-[#EBCB8B]/15 px-1.5 py-0.5 rounded-md border border-[#EBCB8B]/25">
-                  <Flame className="w-2.5 h-2.5" /> {frostData.currentStreak}h Streak
-                </span>
-              )}
-            </div>
+          <div className="p-3 rounded-xl bg-[#242933]/80 border border-[#434C5E]/50 space-y-1.5 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-medium text-[#81A1C1]">Frost Shards</span>
+                {frostData && frostData.currentStreak > 0 && (
+                  <span className="inline-flex items-center gap-0.5 text-[10px] font-extrabold text-[#EBCB8B] bg-[#EBCB8B]/15 px-1.5 py-0.5 rounded-md border border-[#EBCB8B]/25">
+                    <Flame className="w-2.5 h-2.5" /> {frostData.currentStreak}h Streak
+                  </span>
+                )}
+              </div>
 
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-lg font-black text-[#ECEFF4] font-mono tracking-tight">
-                {frostData?.balance ?? 0}
-              </span>
-              <span className="text-xs text-[#88C0D0] font-bold">Shards</span>
+              <div className="flex items-center gap-2 mt-1">
+                <Image
+                  src="/images/gamification/frost_shard.png"
+                  alt="Frost Shard"
+                  width={24}
+                  height={24}
+                  className="object-contain filter drop-shadow select-none"
+                  style={{ imageRendering: "pixelated" }}
+                />
+                <div className="flex items-baseline gap-1">
+                  <span className="text-lg font-black text-[#ECEFF4] font-mono tracking-tight">
+                    {frostData?.balance ?? 0}
+                  </span>
+                  <span className="text-xs text-[#88C0D0] font-bold">Shards</span>
+                </div>
+              </div>
             </div>
 
             <div className="pt-0.5 flex items-center gap-1 text-[10px]">
               {frostData?.todayStatus === "no_spend_active" ? (
                 <span className="text-[#A3BE8C] font-semibold flex items-center gap-1">
-                  ❄️ Hari ini aman (No-Spend)
+                  Hari ini aman (No-Spend)
                 </span>
               ) : (
                 <span className="text-[#BF616A] font-semibold flex items-center gap-1">
-                  🛒 Ada belanja konsumtif
+                  Ada belanja konsumtif
                 </span>
               )}
             </div>
           </div>
 
           {/* Aegis Barrier */}
-          <div className="p-3 rounded-xl bg-[#242933]/80 border border-[#434C5E]/50 space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-medium text-[#81A1C1]">Aegis Barrier</span>
-              <Shield className="w-3.5 h-3.5 text-[#88C0D0]" />
-            </div>
+          <div className="p-3 rounded-xl bg-[#242933]/80 border border-[#434C5E]/50 space-y-1.5 flex flex-col justify-between">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-medium text-[#81A1C1]">Aegis Barrier</span>
+                <span className="text-[10px] font-semibold text-[#81A1C1]">
+                  {aegisData?.statusDetails.label || "Utuh"}
+                </span>
+              </div>
 
-            <div className="flex items-baseline gap-1.5">
-              <span
-                className="text-lg font-black font-mono tracking-tight"
-                style={{ color: aegisData?.statusDetails.color || "#88C0D0" }}
-              >
-                {aegisData?.integrity ?? 100}%
-              </span>
-              <span className="text-xs text-[#81A1C1]">Integritas</span>
+              <div className="flex items-center gap-2 mt-1">
+                <Image
+                  src="/images/gamification/aegis_shield.png"
+                  alt="Aegis Shield"
+                  width={24}
+                  height={24}
+                  className="object-contain filter drop-shadow select-none"
+                  style={{ imageRendering: "pixelated" }}
+                />
+                <div className="flex items-baseline gap-1">
+                  <span
+                    className="text-lg font-black font-mono tracking-tight"
+                    style={{ color: aegisData?.statusDetails.color || "#88C0D0" }}
+                  >
+                    {aegisData?.integrity ?? 100}%
+                  </span>
+                  <span className="text-xs text-[#81A1C1]">Integritas</span>
+                </div>
+              </div>
             </div>
 
             <div className="pt-0.5 flex items-center gap-1 text-[10px]">

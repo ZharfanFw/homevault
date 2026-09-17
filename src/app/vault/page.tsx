@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import {
   Sparkles,
   Shield,
@@ -8,7 +9,6 @@ import {
   Coins,
   Flame,
   Plus,
-  Wrench,
   AlertTriangle,
   CheckCircle2,
   Lock,
@@ -200,8 +200,15 @@ export default function VaultPage() {
 
             {/* Frost Shards Counter Pill */}
             <div className="flex flex-col items-end">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-[#242933]/90 border border-[#88C0D0]/40 shadow-inner">
-                <span className="text-base">🧊</span>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-[#242933]/90 border border-[#88C0D0]/40 shadow-inner">
+                <Image
+                  src="/images/gamification/frost_shard.png"
+                  alt="Frost Shard"
+                  width={20}
+                  height={20}
+                  className="object-contain filter drop-shadow select-none"
+                  style={{ imageRendering: "pixelated" }}
+                />
                 <span className="text-base font-black text-[#ECEFF4] font-mono">
                   {frostData?.balance ?? 0}
                 </span>
@@ -218,8 +225,15 @@ export default function VaultPage() {
           {/* KPI Mini Row */}
           <div className="grid grid-cols-2 gap-2.5 pt-2 border-t border-[#434C5E]/50">
             <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#242933]/70 border border-[#434C5E]/40">
-              <div className="w-8 h-8 rounded-lg bg-[#A3BE8C]/15 text-[#A3BE8C] flex items-center justify-center font-bold text-sm">
-                ❄️
+              <div className="w-8 h-8 rounded-lg bg-[#242933] border border-[#88C0D0]/30 flex items-center justify-center p-1 shrink-0">
+                <Image
+                  src="/images/gamification/frost_shard.png"
+                  alt="Status"
+                  width={20}
+                  height={20}
+                  className="object-contain filter drop-shadow select-none"
+                  style={{ imageRendering: "pixelated" }}
+                />
               </div>
               <div>
                 <p className="text-[10px] text-[#81A1C1] font-medium">Status Hari Ini</p>
@@ -230,8 +244,15 @@ export default function VaultPage() {
             </div>
 
             <div className="flex items-center gap-2.5 p-2.5 rounded-xl bg-[#242933]/70 border border-[#434C5E]/40">
-              <div className="w-8 h-8 rounded-lg bg-[#88C0D0]/15 text-[#88C0D0] flex items-center justify-center font-bold text-sm">
-                🛡️
+              <div className="w-8 h-8 rounded-lg bg-[#242933] border border-[#88C0D0]/30 flex items-center justify-center p-1 shrink-0">
+                <Image
+                  src="/images/gamification/aegis_shield.png"
+                  alt="Aegis"
+                  width={22}
+                  height={22}
+                  className="object-contain filter drop-shadow select-none"
+                  style={{ imageRendering: "pixelated" }}
+                />
               </div>
               <div>
                 <p className="text-[10px] text-[#81A1C1] font-medium">Aegis Barrier</p>
@@ -376,13 +397,17 @@ export default function VaultPage() {
                 />
               </svg>
 
-              {/* Shield Core */}
+              {/* Shield Core with Pixel Art */}
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <Shield
-                  className="w-10 h-10 mb-0.5"
-                  style={{ color: aegisData?.statusDetails?.color || "#88C0D0" }}
+                <Image
+                  src="/images/gamification/aegis_shield.png"
+                  alt="Aegis Shield"
+                  width={44}
+                  height={44}
+                  className="object-contain filter drop-shadow select-none mb-1"
+                  style={{ imageRendering: "pixelated" }}
                 />
-                <span className="text-2xl font-black font-mono text-[#ECEFF4]">
+                <span className="text-xl font-black font-mono text-[#ECEFF4]">
                   {aegisData?.integrity ?? 100}%
                 </span>
                 <span className="text-[10px] text-[#81A1C1] font-bold uppercase">Integritas</span>
@@ -478,11 +503,18 @@ export default function VaultPage() {
                     ) : crack.isMinor ? (
                       <button
                         onClick={() => handleRepairCrack(crack.id)}
-                        className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#5E81AC] to-[#88C0D0] text-[#2E3440] text-xs font-bold shadow-md shadow-[#88C0D0]/20 flex items-center gap-1 shrink-0 hover:brightness-110 tap-effect"
+                        className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#5E81AC] to-[#88C0D0] text-[#2E3440] text-xs font-bold shadow-md shadow-[#88C0D0]/20 flex items-center gap-1.5 shrink-0 hover:brightness-110 tap-effect"
                         title="Perbaiki retak menggunakan 1 Frost Shard"
                       >
-                        <Wrench className="w-3.5 h-3.5" />
-                        <span>Rune (1 🧊)</span>
+                        <Image
+                          src="/images/gamification/rune_repair_stone.png"
+                          alt="Rune"
+                          width={16}
+                          height={16}
+                          className="object-contain filter drop-shadow select-none"
+                          style={{ imageRendering: "pixelated" }}
+                        />
+                        <span>Rune (1 Shard)</span>
                       </button>
                     ) : (
                       <span className="text-[10px] font-bold text-[#BF616A] bg-[#BF616A]/15 px-2 py-1 rounded-xl border border-[#BF616A]/30 shrink-0">
@@ -563,9 +595,29 @@ export default function VaultPage() {
                       >
                         <div>
                           <div className="flex items-start justify-between gap-2">
-                            <h4 className="text-sm font-bold text-[#ECEFF4] leading-snug">{v.name}</h4>
-                            <span className="text-xs font-bold text-[#88C0D0] bg-[#88C0D0]/15 px-2 py-0.5 rounded-lg shrink-0 font-mono">
-                              {v.shardCost} 🧊
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-lg bg-[#242933] border border-[#88C0D0]/30 flex items-center justify-center p-0.5 shrink-0">
+                                <Image
+                                  src="/images/gamification/voucher_ticket.png"
+                                  alt="Ticket"
+                                  width={28}
+                                  height={28}
+                                  className="object-contain filter drop-shadow select-none"
+                                  style={{ imageRendering: "pixelated" }}
+                                />
+                              </div>
+                              <h4 className="text-sm font-bold text-[#ECEFF4] leading-snug">{v.name}</h4>
+                            </div>
+                            <span className="text-xs font-bold text-[#88C0D0] bg-[#88C0D0]/15 px-2 py-0.5 rounded-lg shrink-0 font-mono flex items-center gap-1">
+                              <Image
+                                src="/images/gamification/frost_shard.png"
+                                alt="Cost"
+                                width={12}
+                                height={12}
+                                className="object-contain select-none"
+                                style={{ imageRendering: "pixelated" }}
+                              />
+                              {v.shardCost}
                             </span>
                           </div>
                           {v.description && (
@@ -651,14 +703,23 @@ export default function VaultPage() {
                       key={v.id}
                       className="p-4 rounded-2xl bg-gradient-to-r from-[#2E3440] to-[#262C38] border border-[#88C0D0]/40 flex items-center justify-between gap-3 shadow-md"
                     >
-                      <div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-base">🎁</span>
-                          <h4 className="text-sm font-bold text-[#ECEFF4]">{v.name}</h4>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-[#242933] border border-[#88C0D0]/30 flex items-center justify-center p-1 shrink-0">
+                          <Image
+                            src="/images/gamification/voucher_ticket.png"
+                            alt="Voucher"
+                            width={32}
+                            height={32}
+                            className="object-contain filter drop-shadow select-none"
+                            style={{ imageRendering: "pixelated" }}
+                          />
                         </div>
-                        <p className="text-xs text-[#81A1C1] mt-0.5">
-                          Batas Maksimal Belanja: <b className="text-[#88C0D0]">{formatCurrency(v.userDefinedCap || 0)}</b>
-                        </p>
+                        <div>
+                          <h4 className="text-sm font-bold text-[#ECEFF4]">{v.name}</h4>
+                          <p className="text-xs text-[#81A1C1] mt-0.5">
+                            Batas Maksimal Belanja: <b className="text-[#88C0D0]">{formatCurrency(v.userDefinedCap || 0)}</b>
+                          </p>
+                        </div>
                       </div>
                       <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-xl bg-[#88C0D0]/15 text-[#88C0D0] border border-[#88C0D0]/30 shrink-0">
                         Aktif

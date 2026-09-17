@@ -8,6 +8,9 @@ export const users = sqliteTable("users", {
   passwordHash: text("password_hash").notNull(),
   currency: text("currency").notNull().default("IDR"),
   isAdmin: integer("is_admin", { mode: "boolean" }).notNull().default(false),
+  gamificationEnabled: integer("gamification_enabled", { mode: "boolean" })
+    .notNull()
+    .default(false),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .$defaultFn(() => new Date()),

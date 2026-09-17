@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useApp } from "@/context/AppContext";
-import { ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
+import { ChevronLeft, ChevronRight, ShieldCheck, Sparkles } from "lucide-react";
 import { getMonthName } from "@/lib/utils/format";
 
 export function Navbar({
@@ -12,8 +12,14 @@ export function Navbar({
   showMonthSelector?: boolean;
   title?: string;
 }) {
-  const { user, selectedMonth, selectedYear, setSelectedMonth, setSelectedYear } =
-    useApp();
+  const {
+    user,
+    selectedMonth,
+    selectedYear,
+    setSelectedMonth,
+    setSelectedYear,
+    isGamificationEnabled,
+  } = useApp();
 
   const handlePrevMonth = () => {
     if (selectedMonth === 1) {
@@ -54,9 +60,16 @@ export function Navbar({
                   </span>
                 )}
               </div>
-              <p className="text-[11px] font-medium text-[#81A1C1] leading-tight mt-0.5 tracking-wide">
-                HomeVault
-              </p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <p className="text-[11px] font-medium text-[#81A1C1] leading-tight tracking-wide">
+                  HomeVault
+                </p>
+                {isGamificationEnabled && (
+                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-md text-[9px] font-extrabold bg-[#88C0D0]/15 text-[#88C0D0] border border-[#88C0D0]/25">
+                    <Sparkles className="w-2.5 h-2.5" /> Vault
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         )}

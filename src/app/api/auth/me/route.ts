@@ -21,6 +21,7 @@ export async function GET() {
         email: user.email,
         currency: user.currency,
         isAdmin: user.isAdmin,
+        gamificationEnabled: Boolean(user.gamificationEnabled),
         createdAt: user.createdAt,
       },
       registrationAllowed,

@@ -43,6 +43,7 @@ sqlite.exec(`
     password_hash TEXT NOT NULL,
     currency TEXT NOT NULL DEFAULT 'IDR',
     is_admin INTEGER NOT NULL DEFAULT 0,
+    gamification_enabled INTEGER NOT NULL DEFAULT 0,
     created_at INTEGER NOT NULL
   );
 
@@ -190,6 +191,13 @@ sqlite.exec(`
   CREATE INDEX IF NOT EXISTS idx_goals_user ON savings_goals(user_id);
   CREATE INDEX IF NOT EXISTS idx_debts_user ON debts_loans(user_id);
 `);
+
+// Run incremental safe migrations for existing tables
+try {
+  sqlite.exec(`ALTER TABLE users ADD COLUMN gamification_enabled INTEGER NOT NULL DEFAULT 0;`);
+} catch {
+  // Column already exists
+}
 
 if (process.env.NODE_ENV !== "production") {
   globalForDb.sqlite = sqlite;

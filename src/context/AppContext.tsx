@@ -9,6 +9,7 @@ export interface User {
   email: string;
   currency: string;
   isAdmin: boolean;
+  gamificationEnabled?: boolean;
 }
 
 interface AppContextType {
@@ -27,6 +28,9 @@ interface AppContextType {
   closeQuickAdd: () => void;
   refreshTrigger: number;
   triggerRefresh: () => void;
+  isGamificationEnabled: boolean;
+  toggleGamification: () => Promise<void>;
+  setGamificationEnabled: (enabled: boolean) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -47,6 +51,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   >("EXPENSE");
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [isGamificationEnabled, setIsGamificationEnabledState] = useState(false);
+
+  // Initialize from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("homevault_gamification_enabled");
+      if (saved !== null) {
+        setIsGamificationEnabledState(saved === "true");
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }, []);
 
   const triggerRefresh = useCallback(() => {
     setRefreshTrigger((prev) => prev + 1);
@@ -59,6 +76,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const data = await res.json();
         setUser(data.user);
         setRegistrationAllowed(data.registrationAllowed);
+        if (data.user && typeof data.user.gamificationEnabled === "boolean") {
+          setIsGamificationEnabledState(data.user.gamificationEnabled);
+          try {
+            localStorage.setItem(
+              "homevault_gamification_enabled",
+              data.user.gamificationEnabled ? "true" : "false"
+            );
+          } catch {}
+        }
       } else {
         setUser(null);
       }
@@ -68,6 +94,29 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setIsLoadingUser(false);
     }
   }, []);
+
+  const setGamificationEnabled = async (enabled: boolean) => {
+    setIsGamificationEnabledState(enabled);
+    try {
+      localStorage.setItem("homevault_gamification_enabled", enabled ? "true" : "false");
+    } catch {}
+
+    if (user) {
+      try {
+        await fetch("/api/user/preferences", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ gamificationEnabled: enabled }),
+        });
+      } catch (err) {
+        console.error("Failed to sync gamification preference to server:", err);
+      }
+    }
+  };
+
+  const toggleGamification = async () => {
+    await setGamificationEnabled(!isGamificationEnabled);
+  };
 
   useEffect(() => {
     refreshUser();
@@ -110,6 +159,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         closeQuickAdd,
         refreshTrigger,
         triggerRefresh,
+        isGamificationEnabled,
+        toggleGamification,
+        setGamificationEnabled,
       }}
     >
       {children}

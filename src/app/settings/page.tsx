@@ -20,6 +20,7 @@ import {
   Target,
   CreditCard,
   ChevronRight,
+  Sparkles,
 } from "lucide-react";
 
 interface CategoryItem {
@@ -62,6 +63,8 @@ export default function SettingsPage() {
     selectedYear,
     refreshTrigger,
     triggerRefresh,
+    isGamificationEnabled,
+    toggleGamification,
   } = useApp();
 
   const [activeTab, setActiveTab] = useState<
@@ -245,6 +248,86 @@ export default function SettingsPage() {
                   Mata Uang: {user?.currency || "IDR"}
                 </p>
               </div>
+            </div>
+          </div>
+
+          {/* Experimental Gamification Feature Card */}
+          <div className="p-5 rounded-3xl bg-[#2E3440] border border-[#434C5E] shadow-sm space-y-3.5 relative overflow-hidden">
+            {isGamificationEnabled && (
+              <div className="absolute top-0 right-0 w-32 h-32 bg-[#88C0D0]/10 rounded-full blur-2xl pointer-events-none" />
+            )}
+
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-3">
+                <div
+                  className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 transition-all ${
+                    isGamificationEnabled
+                      ? "bg-gradient-to-tr from-[#5E81AC] to-[#88C0D0] text-[#2E3440] shadow-md shadow-[#88C0D0]/25"
+                      : "bg-[#3B4252] text-[#81A1C1]"
+                  }`}
+                >
+                  <Sparkles className="w-5 h-5 stroke-[2.3]" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="text-sm font-bold text-[#ECEFF4]">
+                      Sistem Gamifikasi (Nordic Vault)
+                    </h4>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#D08770]/20 text-[#D08770] border border-[#D08770]/30 tracking-tight">
+                      Eksperimental
+                    </span>
+                  </div>
+                  <p className="text-xs text-[#D8DEE9]/70 mt-1 leading-relaxed">
+                    Aktifkan sistem Frost Shards (No-Spend Days), Perisai Anggaran (Aegis Barrier), dan Tempaan Koin Impian (The Minted Coins).
+                  </p>
+                </div>
+              </div>
+
+              {/* Custom Animated Toggle Switch */}
+              <button
+                type="button"
+                role="switch"
+                aria-checked={isGamificationEnabled}
+                onClick={toggleGamification}
+                className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none tap-effect ${
+                  isGamificationEnabled ? "bg-[#88C0D0]" : "bg-[#3B4252]"
+                }`}
+              >
+                <span className="sr-only">Toggle Sistem Gamifikasi</span>
+                <span
+                  aria-hidden="true"
+                  className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-[#242933] shadow-md ring-0 transition duration-200 ease-in-out ${
+                    isGamificationEnabled ? "translate-x-5 bg-white" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Status indicator banner */}
+            <div
+              className={`p-3 rounded-2xl text-xs flex items-center justify-between border transition-all ${
+                isGamificationEnabled
+                  ? "bg-[#88C0D0]/10 border-[#88C0D0]/30 text-[#88C0D0]"
+                  : "bg-[#3B4252]/40 border-[#434C5E] text-[#81A1C1]"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    isGamificationEnabled ? "bg-[#A3BE8C] animate-pulse" : "bg-[#4C566A]"
+                  }`}
+                />
+                <span className="font-semibold">
+                  {isGamificationEnabled
+                    ? "Fitur Eksperimental Aktif"
+                    : "Mode Standar Minimalis"}
+                </span>
+              </div>
+              <span className="text-[11px] opacity-80">
+                {isGamificationEnabled
+                  ? "Modul gamifikasi siap digunakan"
+                  : "Tanpa elemen permainan"}
+              </span>
             </div>
           </div>
 

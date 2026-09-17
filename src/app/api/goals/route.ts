@@ -8,6 +8,7 @@ import {
 } from "@/lib/db";
 import { eq, desc } from "drizzle-orm";
 import crypto from "crypto";
+import { enrichGoalWithCoin } from "@/lib/gamification/coinEngine";
 
 export async function GET() {
   try {
@@ -28,6 +29,9 @@ export async function GET() {
         color: savingsGoals.color,
         icon: savingsGoals.icon,
         status: savingsGoals.status,
+        peakAmount: savingsGoals.peakAmount,
+        isFlawless: savingsGoals.isFlawless,
+        completedAt: savingsGoals.completedAt,
         createdAt: savingsGoals.createdAt,
         targetWalletName: wallets.name,
         targetWalletColor: wallets.color,
@@ -93,14 +97,14 @@ export async function GET() {
 
       const logs = allLogs.filter((l) => l.goalId === g.id);
 
-      return {
+      return enrichGoalWithCoin({
         ...g,
         percentage,
         remainingAmount,
         daysRemaining,
         recommendedMonthly,
         logs,
-      };
+      });
     });
 
     const totalSaved = enrichedGoals.reduce(
@@ -164,6 +168,9 @@ export async function POST(req: Request) {
       name: name.trim(),
       targetAmount: parsedTarget,
       currentAmount: 0,
+      peakAmount: 0,
+      isFlawless: true,
+      completedAt: null,
       targetDate: targetDate || null,
       color: color || "#88C0D0",
       icon: icon || "piggy-bank",
@@ -173,7 +180,10 @@ export async function POST(req: Request) {
 
     db.insert(savingsGoals).values(newGoal).run();
 
-    return NextResponse.json({ success: true, goal: newGoal });
+    return NextResponse.json({
+      success: true,
+      goal: enrichGoalWithCoin(newGoal),
+    });
   } catch (error) {
     console.error("Create goal error:", error);
     return NextResponse.json(

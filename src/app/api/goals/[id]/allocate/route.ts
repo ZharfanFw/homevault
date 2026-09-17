@@ -10,6 +10,7 @@ import {
 } from "@/lib/db";
 import { eq, and } from "drizzle-orm";
 import crypto from "crypto";
+import { enrichGoalWithCoin } from "@/lib/gamification/coinEngine";
 
 export async function POST(
   req: Request,
@@ -136,14 +137,21 @@ export async function POST(
 
     let newCurrentAmount = goal.currentAmount;
     let newStatus: "IN_PROGRESS" | "COMPLETED" = goal.status;
+    let newPeakAmount = goal.peakAmount || goal.currentAmount;
+    let completedAt = goal.completedAt;
 
     if (type === "DEPOSIT") {
       newCurrentAmount += parsedAmount;
+      newPeakAmount = Math.max(newPeakAmount, newCurrentAmount);
       if (newCurrentAmount >= goal.targetAmount) {
         newStatus = "COMPLETED";
+        if (!completedAt) {
+          completedAt = new Date();
+        }
       }
     } else {
       newCurrentAmount -= parsedAmount;
+      // Peak locking: newPeakAmount remains intact!
       if (newCurrentAmount < goal.targetAmount) {
         newStatus = "IN_PROGRESS";
       }
@@ -186,11 +194,13 @@ export async function POST(
         })
         .run();
 
-      // 3. Update savings goal current amount and status
+      // 3. Update savings goal current amount, peak amount, status and completedAt
       db.update(savingsGoals)
         .set({
           currentAmount: newCurrentAmount,
+          peakAmount: newPeakAmount,
           status: newStatus,
+          completedAt,
         })
         .where(eq(savingsGoals.id, goal.id))
         .run();
@@ -198,11 +208,23 @@ export async function POST(
 
     executeAllocation();
 
+    const coinInfo = enrichGoalWithCoin({
+      targetAmount: goal.targetAmount,
+      currentAmount: newCurrentAmount,
+      peakAmount: newPeakAmount,
+      isFlawless: goal.isFlawless,
+      completedAt,
+    });
+
     return NextResponse.json({
       success: true,
       currentAmount: newCurrentAmount,
+      peakAmount: newPeakAmount,
       status: newStatus,
       transactionId: txId,
+      coinTier: coinInfo.coinTier,
+      coinDetails: coinInfo.coinDetails,
+      nextMilestone: coinInfo.nextMilestone,
     });
   } catch (error) {
     console.error("Allocate goal error:", error);

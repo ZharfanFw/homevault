@@ -35,6 +35,7 @@ export function isDateFrostDay(userId: string, dateStr: string): boolean {
   const expenseTxs = db
     .select({
       id: transactions.id,
+      notes: transactions.notes,
       spendingType: categories.spendingType,
     })
     .from(transactions)
@@ -49,12 +50,17 @@ export function isDateFrostDay(userId: string, dateStr: string): boolean {
     .all();
 
   // If any expense has spendingType 'consumptive' or 'self_reward' (or null/unclassified), it breaks the Frost Day
-  const hasConsumptiveExpense = expenseTxs.some(
-    (tx) =>
+  // Note: Savings deposits ("[Setor Tabungan]") are positive habits, not consumptive expenses
+  const hasConsumptiveExpense = expenseTxs.some((tx) => {
+    if (tx.notes?.startsWith("[Setor Tabungan]")) {
+      return false;
+    }
+    return (
       !tx.spendingType ||
       tx.spendingType === "consumptive" ||
       tx.spendingType === "self_reward"
-  );
+    );
+  });
 
   return !hasConsumptiveExpense;
 }
@@ -135,6 +141,7 @@ export function syncUserFrostShards(
     .select({
       id: transactions.id,
       date: transactions.date,
+      notes: transactions.notes,
       spendingType: categories.spendingType,
     })
     .from(transactions)
@@ -149,9 +156,12 @@ export function syncUserFrostShards(
     )
     .all();
 
-  // Map dates with consumptive expenses
+  // Map dates with consumptive expenses (ignoring savings deposits)
   const datesWithConsumptiveSpending = new Set<string>();
   for (const tx of expenseTxs) {
+    if (tx.notes?.startsWith("[Setor Tabungan]")) {
+      continue;
+    }
     if (
       !tx.spendingType ||
       tx.spendingType === "consumptive" ||

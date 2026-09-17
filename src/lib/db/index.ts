@@ -249,7 +249,7 @@ sqlite.exec(`
   CREATE INDEX IF NOT EXISTS idx_goals_user ON savings_goals(user_id);
   CREATE INDEX IF NOT EXISTS idx_debts_user ON debts_loans(user_id);
   CREATE UNIQUE INDEX IF NOT EXISTS idx_frost_shards_user_date ON frost_shards(user_id, date);
-  CREATE INDEX IF NOT EXISTS idx_aegis_barriers_user ON aegis_barriers(user_id, month);
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_aegis_barriers_user_month ON aegis_barriers(user_id, month);
   CREATE INDEX IF NOT EXISTS idx_aegis_cracks_barrier ON aegis_cracks(barrier_id);
   CREATE INDEX IF NOT EXISTS idx_vault_shop_user ON vault_shop_items(user_id);
   CREATE INDEX IF NOT EXISTS idx_vault_redemptions_user ON vault_redemptions(user_id);

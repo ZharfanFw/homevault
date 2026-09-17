@@ -275,20 +275,29 @@ export const frostShards = sqliteTable(
   })
 );
 
-export const aegisBarriers = sqliteTable("aegis_barriers", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  month: text("month").notNull(), // "YYYY-MM"
-  integrity: integer("integrity").notNull().default(100), // 0 - 100
-  trophyAwarded: integer("trophy_awarded", { mode: "boolean" })
-    .notNull()
-    .default(false),
-  createdAt: integer("created_at", { mode: "timestamp_ms" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-});
+export const aegisBarriers = sqliteTable(
+  "aegis_barriers",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    month: text("month").notNull(), // "YYYY-MM"
+    integrity: integer("integrity").notNull().default(100), // 0 - 100
+    trophyAwarded: integer("trophy_awarded", { mode: "boolean" })
+      .notNull()
+      .default(false),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    userMonthIdx: uniqueIndex("idx_aegis_barriers_user_month").on(
+      table.userId,
+      table.month
+    ),
+  })
+);
 
 export const aegisCracks = sqliteTable("aegis_cracks", {
   id: text("id").primaryKey(),

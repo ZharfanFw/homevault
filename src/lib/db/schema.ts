@@ -50,6 +50,9 @@ export const categories = sqliteTable("categories", {
     .references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   type: text("type", { enum: ["EXPENSE", "INCOME"] }).notNull(),
+  spendingType: text("spending_type", {
+    enum: ["consumptive", "essential", "bill", "self_reward"],
+  }).default("consumptive"),
   icon: text("icon").notNull().default("tag"),
   color: text("color").notNull().default("#64748b"),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
@@ -166,12 +169,15 @@ export const savingsGoals = sqliteTable("savings_goals", {
   name: text("name").notNull(),
   targetAmount: integer("target_amount").notNull(),
   currentAmount: integer("current_amount").notNull().default(0),
+  peakAmount: integer("peak_amount").notNull().default(0),
+  isFlawless: integer("is_flawless", { mode: "boolean" }).notNull().default(true),
   targetDate: text("target_date"),
   color: text("color").notNull().default("#88C0D0"),
   icon: text("icon").notNull().default("piggy-bank"),
   status: text("status", { enum: ["IN_PROGRESS", "COMPLETED"] })
     .notNull()
     .default("IN_PROGRESS"),
+  completedAt: integer("completed_at", { mode: "timestamp_ms" }),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
     .$defaultFn(() => new Date()),
@@ -245,6 +251,94 @@ export const debtRepayments = sqliteTable("debt_repayments", {
     .$defaultFn(() => new Date()),
 });
 
+// 8. Gamification Engine (Nordic Vault)
+export const frostShards = sqliteTable("frost_shards", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  date: text("date").notNull(), // "YYYY-MM-DD"
+  expiresAt: text("expires_at").notNull(), // "YYYY-MM-DD" (date + 30 days)
+  redeemed: integer("redeemed", { mode: "boolean" }).notNull().default(false),
+  redeemedAt: integer("redeemed_at", { mode: "timestamp_ms" }),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export const aegisBarriers = sqliteTable("aegis_barriers", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  month: text("month").notNull(), // "YYYY-MM"
+  integrity: integer("integrity").notNull().default(100), // 0 - 100
+  trophyAwarded: integer("trophy_awarded", { mode: "boolean" })
+    .notNull()
+    .default(false),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export const aegisCracks = sqliteTable("aegis_cracks", {
+  id: text("id").primaryKey(),
+  barrierId: text("barrier_id")
+    .notNull()
+    .references(() => aegisBarriers.id, { onDelete: "cascade" }),
+  categoryId: text("category_id")
+    .notNull()
+    .references(() => categories.id, { onDelete: "cascade" }),
+  overspendAmount: integer("overspend_amount").notNull(),
+  overspendPercentage: integer("overspend_percentage").notNull(),
+  isMinor: integer("is_minor", { mode: "boolean" }).notNull().default(true),
+  repaired: integer("repaired", { mode: "boolean" }).notNull().default(false),
+  repairedAt: integer("repaired_at", { mode: "timestamp_ms" }),
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export const vaultShopItems = sqliteTable("vault_shop_items", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").references(() => users.id, { onDelete: "cascade" }), // null = global system item, non-null = user-defined voucher
+  type: text("type", { enum: ["voucher", "virtual"] }).notNull(),
+  name: text("name").notNull(),
+  description: text("description"),
+  shardCost: integer("shard_cost").notNull(),
+  userDefinedCap: integer("user_defined_cap"), // max budget for vouchers
+  isSeasonal: integer("is_seasonal", { mode: "boolean" })
+    .notNull()
+    .default(false),
+  availableUntil: text("available_until"), // YYYY-MM-DD
+  icon: text("icon").notNull().default("gift"),
+  metadata: text("metadata"), // JSON string (custom style, perk keys, etc.)
+  createdAt: integer("created_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export const vaultRedemptions = sqliteTable("vault_redemptions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  itemId: text("item_id")
+    .notNull()
+    .references(() => vaultShopItems.id, { onDelete: "cascade" }),
+  shardCost: integer("shard_cost").notNull(),
+  actualSpentAmount: integer("actual_spent_amount"),
+  transactionId: text("transaction_id").references(() => transactions.id, {
+    onDelete: "set null",
+  }),
+  status: text("status", { enum: ["ACTIVE", "USED", "EXPIRED"] })
+    .notNull()
+    .default("ACTIVE"),
+  redeemedAt: integer("redeemed_at", { mode: "timestamp_ms" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   wallets: many(wallets),
@@ -254,6 +348,10 @@ export const usersRelations = relations(users, ({ many }) => ({
   recurringTransactions: many(recurringTransactions),
   savingsGoals: many(savingsGoals),
   debtsLoans: many(debtsLoans),
+  frostShards: many(frostShards),
+  aegisBarriers: many(aegisBarriers),
+  vaultShopItems: many(vaultShopItems),
+  vaultRedemptions: many(vaultRedemptions),
 }));
 
 export const walletsRelations = relations(wallets, ({ one, many }) => ({
@@ -398,6 +496,55 @@ export const debtRepaymentsRelations = relations(debtRepayments, ({ one }) => ({
   }),
 }));
 
+export const frostShardsRelations = relations(frostShards, ({ one }) => ({
+  user: one(users, {
+    fields: [frostShards.userId],
+    references: [users.id],
+  }),
+}));
+
+export const aegisBarriersRelations = relations(aegisBarriers, ({ one, many }) => ({
+  user: one(users, {
+    fields: [aegisBarriers.userId],
+    references: [users.id],
+  }),
+  cracks: many(aegisCracks),
+}));
+
+export const aegisCracksRelations = relations(aegisCracks, ({ one }) => ({
+  barrier: one(aegisBarriers, {
+    fields: [aegisCracks.barrierId],
+    references: [aegisBarriers.id],
+  }),
+  category: one(categories, {
+    fields: [aegisCracks.categoryId],
+    references: [categories.id],
+  }),
+}));
+
+export const vaultShopItemsRelations = relations(vaultShopItems, ({ one, many }) => ({
+  user: one(users, {
+    fields: [vaultShopItems.userId],
+    references: [users.id],
+  }),
+  redemptions: many(vaultRedemptions),
+}));
+
+export const vaultRedemptionsRelations = relations(vaultRedemptions, ({ one }) => ({
+  user: one(users, {
+    fields: [vaultRedemptions.userId],
+    references: [users.id],
+  }),
+  item: one(vaultShopItems, {
+    fields: [vaultRedemptions.itemId],
+    references: [vaultShopItems.id],
+  }),
+  transaction: one(transactions, {
+    fields: [vaultRedemptions.transactionId],
+    references: [transactions.id],
+  }),
+}));
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Wallet = typeof wallets.$inferSelect;
@@ -423,3 +570,14 @@ export type DebtLoan = typeof debtsLoans.$inferSelect;
 export type NewDebtLoan = typeof debtsLoans.$inferInsert;
 export type DebtRepayment = typeof debtRepayments.$inferSelect;
 export type NewDebtRepayment = typeof debtRepayments.$inferInsert;
+
+export type FrostShard = typeof frostShards.$inferSelect;
+export type NewFrostShard = typeof frostShards.$inferInsert;
+export type AegisBarrier = typeof aegisBarriers.$inferSelect;
+export type NewAegisBarrier = typeof aegisBarriers.$inferInsert;
+export type AegisCrack = typeof aegisCracks.$inferSelect;
+export type NewAegisCrack = typeof aegisCracks.$inferInsert;
+export type VaultShopItem = typeof vaultShopItems.$inferSelect;
+export type NewVaultShopItem = typeof vaultShopItems.$inferInsert;
+export type VaultRedemption = typeof vaultRedemptions.$inferSelect;
+export type NewVaultRedemption = typeof vaultRedemptions.$inferInsert;

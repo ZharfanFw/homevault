@@ -2,16 +2,16 @@ import { db, categories, wallets } from "./index";
 import crypto from "crypto";
 
 export async function seedUserData(userId: string) {
-  // Curated Nord Aurora & Frost colors
+  // Curated Nord Aurora & Frost colors with initial spending classifications
   const defaultExpenseCategories = [
-    { name: "Makanan & Minuman", icon: "utensils", color: "#D08770" }, // nord12 Orange
-    { name: "Belanja Bulanan", icon: "shopping-cart", color: "#8FBCBB" }, // nord7 Teal
-    { name: "Transportasi", icon: "car", color: "#81A1C1" }, // nord9 Glacier Blue
-    { name: "Tagihan & Utilitas", icon: "receipt", color: "#BF616A" }, // nord11 Red
-    { name: "Hiburan & Hobi", icon: "gamepad-2", color: "#B48EAD" }, // nord15 Purple
-    { name: "Kesehatan", icon: "heart-pulse", color: "#EBCB8B" }, // nord13 Yellow
-    { name: "Pendidikan", icon: "graduation-cap", color: "#A3BE8C" }, // nord14 Green
-    { name: "Lainnya", icon: "more-horizontal", color: "#4C566A" }, // nord3 Slate
+    { name: "Makanan & Minuman", icon: "utensils", color: "#D08770", spendingType: "essential" as const }, // nord12 Orange
+    { name: "Belanja Bulanan", icon: "shopping-cart", color: "#8FBCBB", spendingType: "essential" as const }, // nord7 Teal
+    { name: "Transportasi", icon: "car", color: "#81A1C1", spendingType: "essential" as const }, // nord9 Glacier Blue
+    { name: "Tagihan & Utilitas", icon: "receipt", color: "#BF616A", spendingType: "bill" as const }, // nord11 Red
+    { name: "Hiburan & Hobi", icon: "gamepad-2", color: "#B48EAD", spendingType: "consumptive" as const }, // nord15 Purple
+    { name: "Kesehatan", icon: "heart-pulse", color: "#EBCB8B", spendingType: "essential" as const }, // nord13 Yellow
+    { name: "Pendidikan", icon: "graduation-cap", color: "#A3BE8C", spendingType: "essential" as const }, // nord14 Green
+    { name: "Lainnya", icon: "more-horizontal", color: "#4C566A", spendingType: "consumptive" as const }, // nord3 Slate
   ];
 
   const defaultIncomeCategories = [
@@ -28,6 +28,7 @@ export async function seedUserData(userId: string) {
       userId,
       name: c.name,
       type: "EXPENSE" as const,
+      spendingType: c.spendingType,
       icon: c.icon,
       color: c.color,
       createdAt: new Date(),
@@ -37,6 +38,7 @@ export async function seedUserData(userId: string) {
       userId,
       name: c.name,
       type: "INCOME" as const,
+      spendingType: null,
       icon: c.icon,
       color: c.color,
       createdAt: new Date(),

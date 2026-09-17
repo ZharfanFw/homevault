@@ -276,6 +276,14 @@ try {
   sqlite.exec(`ALTER TABLE savings_goals ADD COLUMN completed_at INTEGER;`);
 } catch {}
 
+// One-time smart backfill for default categories that were previously created
+try {
+  sqlite.exec(`
+    UPDATE categories SET spending_type = 'bill' WHERE type = 'EXPENSE' AND (name LIKE '%Tagihan%' OR name LIKE '%Listrik%' OR name LIKE '%Utilitas%');
+    UPDATE categories SET spending_type = 'essential' WHERE type = 'EXPENSE' AND (name LIKE '%Pokok%' OR name LIKE '%Belanja Bulanan%' OR name LIKE '%Transportasi%' OR name LIKE '%Kesehatan%' OR name LIKE '%Pendidikan%' OR name LIKE '%Makanan%');
+  `);
+} catch {}
+
 if (process.env.NODE_ENV !== "production") {
   globalForDb.sqlite = sqlite;
 }

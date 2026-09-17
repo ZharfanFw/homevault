@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { useApp } from "@/context/AppContext";
 import { ChevronLeft, ChevronRight, ShieldCheck, Sparkles } from "lucide-react";
 import { getMonthName } from "@/lib/utils/format";
@@ -65,9 +66,12 @@ export function Navbar({
                   HomeVault
                 </p>
                 {isGamificationEnabled && (
-                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-md text-[9px] font-extrabold bg-[#88C0D0]/15 text-[#88C0D0] border border-[#88C0D0]/25">
+                  <Link
+                    href="/vault"
+                    className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-md text-[9px] font-extrabold bg-[#88C0D0]/15 hover:bg-[#88C0D0]/25 text-[#88C0D0] border border-[#88C0D0]/30 transition-colors tap-effect"
+                  >
                     <Sparkles className="w-2.5 h-2.5" /> Vault
-                  </span>
+                  </Link>
                 )}
               </div>
             </div>

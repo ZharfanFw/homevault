@@ -16,6 +16,7 @@ import { WalletModal } from "@/components/modals/WalletModal";
 import { EditTransactionModal, TransactionDetail } from "@/components/modals/EditTransactionModal";
 import { ChevronRight, Repeat, Target, CreditCard } from "lucide-react";
 import Link from "next/link";
+import { VaultDashboardWidget } from "@/components/gamification/VaultDashboardWidget";
 
 export default function DashboardPage() {
   const {
@@ -103,6 +104,9 @@ export default function DashboardPage() {
         monthlyExpense={monthlyExpense}
         netCashflow={netCashflow}
       />
+
+      {/* Nordic Vault Gamification Widget (when active) */}
+      <VaultDashboardWidget />
 
       {/* Wallets Row */}
       <WalletList

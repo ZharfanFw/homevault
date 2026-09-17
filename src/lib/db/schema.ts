@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, uniqueIndex } from "drizzle-orm/sqlite-core";
 import { relations } from "drizzle-orm";
 
 export const users = sqliteTable("users", {
@@ -252,19 +252,28 @@ export const debtRepayments = sqliteTable("debt_repayments", {
 });
 
 // 8. Gamification Engine (Nordic Vault)
-export const frostShards = sqliteTable("frost_shards", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  date: text("date").notNull(), // "YYYY-MM-DD"
-  expiresAt: text("expires_at").notNull(), // "YYYY-MM-DD" (date + 30 days)
-  redeemed: integer("redeemed", { mode: "boolean" }).notNull().default(false),
-  redeemedAt: integer("redeemed_at", { mode: "timestamp_ms" }),
-  createdAt: integer("created_at", { mode: "timestamp_ms" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-});
+export const frostShards = sqliteTable(
+  "frost_shards",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    date: text("date").notNull(), // "YYYY-MM-DD"
+    expiresAt: text("expires_at").notNull(), // "YYYY-MM-DD" (date + 30 days)
+    redeemed: integer("redeemed", { mode: "boolean" }).notNull().default(false),
+    redeemedAt: integer("redeemed_at", { mode: "timestamp_ms" }),
+    createdAt: integer("created_at", { mode: "timestamp_ms" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    userDateIdx: uniqueIndex("idx_frost_shards_user_date").on(
+      table.userId,
+      table.date
+    ),
+  })
+);
 
 export const aegisBarriers = sqliteTable("aegis_barriers", {
   id: text("id").primaryKey(),

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/session";
 import { db, transactions } from "@/lib/db";
 import { eq, and } from "drizzle-orm";
+import { onTransactionChanged } from "@/lib/gamification/frostEngine";
 
 export async function PATCH(
   req: Request,
@@ -44,6 +45,12 @@ export async function PATCH(
       .where(and(eq(transactions.id, id), eq(transactions.userId, user.id)))
       .run();
 
+    // Gamification reactive hook: update frost shard status for affected date(s)
+    onTransactionChanged(user.id, existingTx.date);
+    if (body.date && body.date !== existingTx.date) {
+      onTransactionChanged(user.id, body.date);
+    }
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Update transaction error:", error);
@@ -82,6 +89,9 @@ export async function DELETE(
     db.delete(transactions)
       .where(and(eq(transactions.id, id), eq(transactions.userId, user.id)))
       .run();
+
+    // Gamification reactive hook: update frost shard status for affected date
+    onTransactionChanged(user.id, existingTx.date);
 
     return NextResponse.json({ success: true });
   } catch (error) {

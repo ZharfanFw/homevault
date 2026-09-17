@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { db, transactions, wallets, categories } from "@/lib/db";
 import { eq, and, desc, like, gte, lte, sql } from "drizzle-orm";
 import crypto from "crypto";
+import { onTransactionChanged } from "@/lib/gamification/frostEngine";
 
 export async function GET(req: Request) {
   try {
@@ -232,6 +233,9 @@ export async function POST(req: Request) {
     };
 
     db.insert(transactions).values(newTransaction).run();
+
+    // Gamification reactive hook: update frost shard status for this date
+    onTransactionChanged(user.id, date);
 
     return NextResponse.json({ success: true, transaction: newTransaction });
   } catch (error) {

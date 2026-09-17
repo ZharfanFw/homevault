@@ -11,6 +11,7 @@ interface CategoryModalProps {
     id: string;
     name: string;
     type: "EXPENSE" | "INCOME";
+    spendingType?: "consumptive" | "essential" | "bill" | "self_reward" | null;
     color: string;
     icon: string;
   } | null;
@@ -27,6 +28,9 @@ export function CategoryModal({
 }: CategoryModalProps) {
   const [name, setName] = useState("");
   const [type, setType] = useState<"EXPENSE" | "INCOME">("EXPENSE");
+  const [spendingType, setSpendingType] = useState<
+    "consumptive" | "essential" | "bill" | "self_reward"
+  >("consumptive");
   const [color, setColor] = useState(COLOR_PALETTE[0]);
   const [icon, setIcon] = useState("tag");
   const [error, setError] = useState("");
@@ -36,11 +40,13 @@ export function CategoryModal({
     if (category) {
       setName(category.name);
       setType(category.type);
+      setSpendingType(category.spendingType || "consumptive");
       setColor(category.color);
       setIcon(category.icon);
     } else {
       setName("");
       setType(defaultType);
+      setSpendingType("consumptive");
       setColor(COLOR_PALETTE[0]);
       setIcon("tag");
     }
@@ -69,6 +75,7 @@ export function CategoryModal({
         body: JSON.stringify({
           name: name.trim(),
           type,
+          spendingType: type === "EXPENSE" ? spendingType : null,
           color,
           icon,
         }),
@@ -156,6 +163,101 @@ export function CategoryModal({
               required
             />
           </div>
+
+          {/* Spending Classification (Frost Day / Discipline Tag) */}
+          {type === "EXPENSE" && (
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-[#D8DEE9]">
+                  Klasifikasi Pengeluaran
+                </label>
+                <span className="text-[10px] text-[#81A1C1] font-medium">
+                  Pengaruh ke Frost Day
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSpendingType("consumptive")}
+                  className={`p-2.5 rounded-xl border text-left tap-effect transition-all ${
+                    spendingType === "consumptive"
+                      ? "bg-[#D08770]/20 border-[#D08770] text-[#ECEFF4] ring-1 ring-[#D08770]/40"
+                      : "bg-[#242933] border-[#434C5E] text-[#D8DEE9]/80 hover:border-[#81A1C1]"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#D08770]">Konsumtif</span>
+                    {spendingType === "consumptive" && (
+                      <Check className="w-3.5 h-3.5 text-[#D08770]" />
+                    )}
+                  </div>
+                  <p className="text-[10px] text-[#D8DEE9]/60 mt-1 leading-tight">
+                    Jajan, belanja, hiburan. Membatalkan Frost Day.
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSpendingType("essential")}
+                  className={`p-2.5 rounded-xl border text-left tap-effect transition-all ${
+                    spendingType === "essential"
+                      ? "bg-[#A3BE8C]/20 border-[#A3BE8C] text-[#ECEFF4] ring-1 ring-[#A3BE8C]/40"
+                      : "bg-[#242933] border-[#434C5E] text-[#D8DEE9]/80 hover:border-[#81A1C1]"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#A3BE8C]">Pokok</span>
+                    {spendingType === "essential" && (
+                      <Check className="w-3.5 h-3.5 text-[#A3BE8C]" />
+                    )}
+                  </div>
+                  <p className="text-[10px] text-[#D8DEE9]/60 mt-1 leading-tight">
+                    Makan pokok, transport kerja. Tetap dapat Frost Day.
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSpendingType("bill")}
+                  className={`p-2.5 rounded-xl border text-left tap-effect transition-all ${
+                    spendingType === "bill"
+                      ? "bg-[#88C0D0]/20 border-[#88C0D0] text-[#ECEFF4] ring-1 ring-[#88C0D0]/40"
+                      : "bg-[#242933] border-[#434C5E] text-[#D8DEE9]/80 hover:border-[#81A1C1]"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#88C0D0]">Tagihan Rutin</span>
+                    {spendingType === "bill" && (
+                      <Check className="w-3.5 h-3.5 text-[#88C0D0]" />
+                    )}
+                  </div>
+                  <p className="text-[10px] text-[#D8DEE9]/60 mt-1 leading-tight">
+                    Listrik, internet, sewa. Tetap dapat Frost Day.
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSpendingType("self_reward")}
+                  className={`p-2.5 rounded-xl border text-left tap-effect transition-all ${
+                    spendingType === "self_reward"
+                      ? "bg-[#B48EAD]/20 border-[#B48EAD] text-[#ECEFF4] ring-1 ring-[#B48EAD]/40"
+                      : "bg-[#242933] border-[#434C5E] text-[#D8DEE9]/80 hover:border-[#81A1C1]"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#B48EAD]">Self-Reward</span>
+                    {spendingType === "self_reward" && (
+                      <Check className="w-3.5 h-3.5 text-[#B48EAD]" />
+                    )}
+                  </div>
+                  <p className="text-[10px] text-[#D8DEE9]/60 mt-1 leading-tight">
+                    Redeem Voucher Shop. Mendiskualifikasi Frost Day.
+                  </p>
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Color Selector */}
           <div>

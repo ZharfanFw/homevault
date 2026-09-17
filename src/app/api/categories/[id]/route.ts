@@ -35,6 +35,13 @@ export async function PATCH(
     if (body.icon !== undefined) updateData.icon = body.icon;
     if (body.type !== undefined) updateData.type = body.type;
 
+    const validSpendingTypes = ["consumptive", "essential", "bill", "self_reward"] as const;
+    if (body.spendingType !== undefined) {
+      updateData.spendingType = validSpendingTypes.includes(body.spendingType)
+        ? body.spendingType
+        : null;
+    }
+
     db.update(categories)
       .set(updateData)
       .where(and(eq(categories.id, id), eq(categories.userId, user.id)))

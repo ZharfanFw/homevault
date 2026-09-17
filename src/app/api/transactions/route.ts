@@ -84,6 +84,7 @@ export async function GET(req: Request) {
         categoryName: categories.name,
         categoryIcon: categories.icon,
         categoryColor: categories.color,
+        categorySpendingType: categories.spendingType,
       })
       .from(transactions)
       .leftJoin(wallets, eq(transactions.walletId, wallets.id))

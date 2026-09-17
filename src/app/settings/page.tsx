@@ -27,6 +27,7 @@ interface CategoryItem {
   id: string;
   name: string;
   type: "EXPENSE" | "INCOME";
+  spendingType?: "consumptive" | "essential" | "bill" | "self_reward" | null;
   icon: string;
   color: string;
 }
@@ -465,9 +466,34 @@ export default function SettingsPage() {
                       >
                         <CategoryIcon name={cat.icon} className="w-4 h-4" />
                       </div>
-                      <span className="text-xs font-semibold text-[#ECEFF4] truncate">
-                        {cat.name}
-                      </span>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-xs font-semibold text-[#ECEFF4] truncate">
+                            {cat.name}
+                          </span>
+                          {cat.spendingType && (
+                            <span
+                              className={`px-1.5 py-0.5 rounded-md text-[9px] font-bold border ${
+                                cat.spendingType === "consumptive"
+                                  ? "bg-[#D08770]/15 text-[#D08770] border-[#D08770]/30"
+                                  : cat.spendingType === "essential"
+                                  ? "bg-[#A3BE8C]/15 text-[#A3BE8C] border-[#A3BE8C]/30"
+                                  : cat.spendingType === "bill"
+                                  ? "bg-[#88C0D0]/15 text-[#88C0D0] border-[#88C0D0]/30"
+                                  : "bg-[#B48EAD]/15 text-[#B48EAD] border-[#B48EAD]/30"
+                              }`}
+                            >
+                              {cat.spendingType === "consumptive"
+                                ? "Konsumtif"
+                                : cat.spendingType === "essential"
+                                ? "Pokok"
+                                : cat.spendingType === "bill"
+                                ? "Tagihan"
+                                : "Self-Reward"}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-1 shrink-0">

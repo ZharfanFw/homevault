@@ -38,7 +38,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { name, type, icon, color } = await req.json();
+    const { name, type, icon, color, spendingType } = await req.json();
 
     if (!name || !name.trim()) {
       return NextResponse.json(
@@ -54,11 +54,18 @@ export async function POST(req: Request) {
       );
     }
 
+    const validSpendingTypes = ["consumptive", "essential", "bill", "self_reward"] as const;
+    const finalSpendingType =
+      type === "EXPENSE"
+        ? (validSpendingTypes.includes(spendingType) ? spendingType : "consumptive")
+        : null;
+
     const newCategory = {
       id: crypto.randomUUID(),
       userId: user.id,
       name: name.trim(),
       type: type as "EXPENSE" | "INCOME",
+      spendingType: finalSpendingType,
       icon: icon || "tag",
       color: color || "#64748b",
       createdAt: new Date(),

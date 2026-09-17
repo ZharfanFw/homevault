@@ -17,8 +17,8 @@ interface DailyTrendChartProps {
 
 export function DailyTrendChart({
   dailyTrends,
-  month,
-  year,
+  month: _month,
+  year: _year,
 }: DailyTrendChartProps) {
   const [hoveredDay, setHoveredDay] = useState<DailyTrendItem | null>(null);
 

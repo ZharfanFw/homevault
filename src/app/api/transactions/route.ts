@@ -24,7 +24,17 @@ export async function GET(req: Request) {
     // Build conditions
     const conditions = [eq(transactions.userId, user.id)];
 
-    if (year && month) {
+    const from = searchParams.get("from") || searchParams.get("startDate");
+    const to = searchParams.get("to") || searchParams.get("endDate");
+
+    if (from && to) {
+      conditions.push(gte(transactions.date, from));
+      conditions.push(lte(transactions.date, to));
+    } else if (from) {
+      conditions.push(gte(transactions.date, from));
+    } else if (to) {
+      conditions.push(lte(transactions.date, to));
+    } else if (year && month) {
       const paddedMonth = month.toString().padStart(2, "0");
       const startDateStr = `${year}-${paddedMonth}-01`;
       // Calculate end of month

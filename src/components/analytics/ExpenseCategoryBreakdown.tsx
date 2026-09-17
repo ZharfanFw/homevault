@@ -20,7 +20,7 @@ interface ExpenseCategoryBreakdownProps {
 
 export function ExpenseCategoryBreakdown({
   categories,
-  totalExpense,
+  totalExpense: _totalExpense,
 }: ExpenseCategoryBreakdownProps) {
   if (categories.length === 0) {
     return (

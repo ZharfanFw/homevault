@@ -14,11 +14,13 @@ export async function GET(req: Request) {
     const now = new Date();
     const month = parseInt(searchParams.get("month") || (now.getMonth() + 1).toString(), 10);
     const year = parseInt(searchParams.get("year") || now.getFullYear().toString(), 10);
+    const customFrom = searchParams.get("from");
+    const customTo = searchParams.get("to");
 
     const paddedMonth = month.toString().padStart(2, "0");
-    const startDateStr = `${year}-${paddedMonth}-01`;
     const daysInMonth = new Date(year, month, 0).getDate();
-    const endDateStr = `${year}-${paddedMonth}-${daysInMonth.toString().padStart(2, "0")}`;
+    const startDateStr = customFrom || `${year}-${paddedMonth}-01`;
+    const endDateStr = customTo || `${year}-${paddedMonth}-${daysInMonth.toString().padStart(2, "0")}`;
 
     // 1. Calculate Net Worth from wallets
     const userWallets = db

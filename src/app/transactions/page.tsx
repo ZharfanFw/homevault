@@ -1,16 +1,21 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useApp } from "@/context/AppContext";
-import { formatCurrency, formatFullDate } from "@/lib/utils/format";
+import { formatCurrency, formatFullDate, getMonthName } from "@/lib/utils/format";
+import { formatDateRangeLabel } from "@/lib/utils/dateRange";
 import { CategoryIcon } from "@/lib/utils/icons";
 import { EditTransactionModal, TransactionDetail } from "@/components/modals/EditTransactionModal";
+import { DateRangePickerModal } from "@/components/analytics/DateRangePickerModal";
 import {
   Search,
   ArrowLeftRight,
   Trash2,
   Edit2,
   X,
+  Calendar,
+  RotateCcw,
 } from "lucide-react";
 
 interface TransactionItem {
@@ -31,11 +36,24 @@ interface TransactionItem {
   categoryColor?: string | null;
 }
 
-export default function TransactionsPage() {
+function TransactionsContent() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const { selectedMonth, selectedYear, refreshTrigger, triggerRefresh } = useApp();
+
+  // Custom date range state initialized from URL params if present
+  const initialFrom = searchParams.get("from");
+  const initialTo = searchParams.get("to");
+  const [customRange, setCustomRange] = useState<{ from: string; to: string } | null>(
+    initialFrom && initialTo ? { from: initialFrom, to: initialTo } : null
+  );
+  const [isRangeModalOpen, setIsRangeModalOpen] = useState(false);
 
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
   const [wallets, setWallets] = useState<Array<{ id: string; name: string }>>([]);
+  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const [search, setSearch] = useState("");
@@ -46,12 +64,45 @@ export default function TransactionsPage() {
   const [selectedTxForEdit, setSelectedTxForEdit] = useState<TransactionItem | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
+  // Sync URL search parameters
+  const updateUrlParams = useCallback((from?: string, to?: string) => {
+    const params = new URLSearchParams(window.location.search);
+    if (from && to) {
+      params.set("from", from);
+      params.set("to", to);
+    } else {
+      params.delete("from");
+      params.delete("to");
+    }
+    const queryString = params.toString();
+    const newUrl = queryString ? `${pathname}?${queryString}` : pathname;
+    router.replace(newUrl, { scroll: false });
+  }, [pathname, router]);
+
+  const handleApplyRange = (range: { from: string; to: string }) => {
+    setCustomRange(range);
+    updateUrlParams(range.from, range.to);
+    setIsRangeModalOpen(false);
+  };
+
+  const handleClearRange = () => {
+    setCustomRange(null);
+    updateUrlParams(undefined, undefined);
+  };
+
   const fetchTransactions = useCallback(async () => {
     try {
       setIsLoading(true);
       const params = new URLSearchParams();
-      params.set("month", selectedMonth.toString());
-      params.set("year", selectedYear.toString());
+
+      if (customRange) {
+        params.set("from", customRange.from);
+        params.set("to", customRange.to);
+      } else {
+        params.set("month", selectedMonth.toString());
+        params.set("year", selectedYear.toString());
+      }
+
       if (search.trim()) params.set("search", search.trim());
       if (selectedType) params.set("type", selectedType);
       if (selectedWalletId) params.set("walletId", selectedWalletId);
@@ -71,6 +122,7 @@ export default function TransactionsPage() {
   }, [
     selectedMonth,
     selectedYear,
+    customRange,
     search,
     selectedType,
     selectedWalletId,
@@ -81,8 +133,9 @@ export default function TransactionsPage() {
     Promise.all([
       fetch("/api/wallets").then((r) => r.json()),
       fetch("/api/categories").then((r) => r.json()),
-    ]).then(([wData]) => {
-      setWallets(wData.wallets || []);
+    ]).then(([wData, cData]) => {
+      setWallets(wData?.wallets || []);
+      setCategories(cData?.categories || []);
     });
   }, []);
 
@@ -120,6 +173,10 @@ export default function TransactionsPage() {
     (a, b) => new Date(b).getTime() - new Date(a).getTime()
   );
 
+  const currentPeriodTitle = customRange
+    ? formatDateRangeLabel(customRange.from, customRange.to)
+    : `${getMonthName(selectedMonth - 1)} ${selectedYear}`;
+
   return (
     <div className="py-4 space-y-4">
       <div>
@@ -129,6 +186,44 @@ export default function TransactionsPage() {
         <p className="text-xs text-[#81A1C1] mt-0.5 font-medium">
           Daftar seluruh mutasi keuangan Anda (klik untuk mengubah)
         </p>
+      </div>
+
+      {/* Active Period & Date Range Filter Bar */}
+      <div className="p-3 rounded-2xl bg-[#2E3440] border border-[#434C5E] flex flex-wrap items-center justify-between gap-2 shadow-sm">
+        <div className="flex items-center gap-2 min-w-0">
+          <Calendar className="w-4 h-4 text-[#88C0D0] shrink-0" />
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-xs font-bold text-[#ECEFF4] truncate">
+              Periode: <span className="font-mono text-[#88C0D0]">{currentPeriodTitle}</span>
+            </span>
+            {customRange && (
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#A3BE8C]/20 text-[#A3BE8C] border border-[#A3BE8C]/30 shrink-0">
+                Kustom
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 shrink-0">
+          {customRange && (
+            <button
+              onClick={handleClearRange}
+              className="px-2.5 py-1.5 rounded-xl bg-[#3B4252] hover:bg-[#434C5E] text-[#D8DEE9] text-xs font-semibold flex items-center gap-1 transition-colors"
+              title="Kembali ke bulan kalender"
+            >
+              <RotateCcw className="w-3 h-3" />
+              <span>Reset</span>
+            </button>
+          )}
+
+          <button
+            onClick={() => setIsRangeModalOpen(true)}
+            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#5E81AC] to-[#88C0D0] text-[#2E3440] text-xs font-bold shadow hover:brightness-110 active:scale-95 transition-all flex items-center gap-1.5"
+          >
+            <Calendar className="w-3.5 h-3.5" />
+            <span>Ubah Rentang</span>
+          </button>
+        </div>
       </div>
 
       {/* Search Bar */}
@@ -208,10 +303,28 @@ export default function TransactionsPage() {
             </option>
           ))}
         </select>
+
+        {/* Category Dropdown Filter */}
+        <select
+          value={selectedCategoryId}
+          onChange={(e) => setSelectedCategoryId(e.target.value)}
+          className="shrink-0 bg-[#2E3440] border border-[#434C5E] rounded-xl px-2.5 py-1.5 text-xs text-[#D8DEE9] focus:outline-none"
+        >
+          <option value="">Semua Kategori</option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* Transactions Grouped by Date */}
-      {sortedDates.length === 0 ? (
+      {isLoading ? (
+        <div className="p-12 text-center bg-[#2E3440]/60 border border-[#434C5E] rounded-3xl mt-4">
+          <p className="text-xs text-[#81A1C1] animate-pulse">Memuat transaksi...</p>
+        </div>
+      ) : sortedDates.length === 0 ? (
         <div className="p-12 text-center bg-[#2E3440]/60 border border-[#434C5E] rounded-3xl mt-4">
           <p className="text-xs text-[#D8DEE9]/60">
             Tidak ada transaksi yang cocok dengan kriteria pencarian.
@@ -348,6 +461,30 @@ export default function TransactionsPage() {
         transaction={selectedTxForEdit ? (selectedTxForEdit as unknown as TransactionDetail) : null}
         onSuccess={() => triggerRefresh()}
       />
+
+      {/* Date Range Picker Modal */}
+      <DateRangePickerModal
+        isOpen={isRangeModalOpen}
+        onClose={() => setIsRangeModalOpen(false)}
+        currentFrom={customRange?.from}
+        currentTo={customRange?.to}
+        onApply={(from, to) => handleApplyRange({ from, to })}
+        onReset={handleClearRange}
+      />
     </div>
+  );
+}
+
+export default function TransactionsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="p-12 text-center bg-[#2E3440]/60 border border-[#434C5E] rounded-3xl mt-4">
+          <p className="text-xs text-[#81A1C1] animate-pulse">Memuat transaksi...</p>
+        </div>
+      }
+    >
+      <TransactionsContent />
+    </Suspense>
   );
 }

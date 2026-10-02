@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { formatCurrency } from "@/lib/utils/format";
 import { CategoryIcon } from "@/lib/utils/icons";
-import { ChevronDown, Calendar, Sparkles } from "lucide-react";
+import { ChevronDown, Calendar } from "lucide-react";
 
 export interface TodayCategoryItem {
   categoryId: string;
@@ -97,8 +97,8 @@ export function TodayExpenseCard({
                 </span>
               </span>
             ) : (
-              <span className="text-[#A3BE8C] font-semibold flex items-center gap-1">
-                <Sparkles className="w-3 h-3" /> Belum ada pengeluaran hari ini
+              <span className="text-[#A3BE8C] font-semibold">
+                Belum ada pengeluaran hari ini
               </span>
             )}
           </p>
@@ -122,10 +122,10 @@ export function TodayExpenseCard({
           {categories.length === 0 ? (
             <div className="p-4 rounded-xl bg-[#242933]/70 border border-[#434C5E]/50 text-center text-xs text-[#81A1C1] space-y-1">
               <p className="font-semibold text-[#A3BE8C]">
-                Belum ada transaksi pengeluaran hari ini!
+                Belum ada transaksi pengeluaran hari ini.
               </p>
               <p className="text-[11px] text-[#D8DEE9]/70">
-                Setiap rupiah yang Anda hemat hari ini memperkuat perisai anggaran bulanan.
+                Semua pengeluaran yang dicatat pada hari ini akan otomatis dirinci di sini.
               </p>
             </div>
           ) : (

@@ -117,3 +117,14 @@ export function formatAmountInput(value: number | string | null | undefined): st
   if (!num) return "";
   return new Intl.NumberFormat("id-ID").format(num);
 }
+
+/**
+ * Returns the local date string in YYYY-MM-DD format based on local client/system time,
+ * avoiding the UTC offset shift caused by Date.prototype.toISOString().
+ */
+export function getLocalDateString(d: Date = new Date()): string {
+  const year = d.getFullYear();
+  const month = (d.getMonth() + 1).toString().padStart(2, "0");
+  const day = d.getDate().toString().padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}

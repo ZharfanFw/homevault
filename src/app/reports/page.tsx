@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useApp } from "@/context/AppContext";
-import { formatCurrency, getMonthName } from "@/lib/utils/format";
+import { formatCurrency, getMonthName, getLocalDateString } from "@/lib/utils/format";
 import { formatDateRangeLabel } from "@/lib/utils/dateRange";
 import {
   ExpenseCategoryBreakdown,
@@ -79,11 +79,7 @@ export default function ReportsPage() {
       }
 
       // Always pass client local today date so today's stats are accurate
-      const now = new Date();
-      const localToday = `${now.getFullYear()}-${(now.getMonth() + 1)
-        .toString()
-        .padStart(2, "0")}-${now.getDate().toString().padStart(2, "0")}`;
-      params.set("today", localToday);
+      params.set("today", getLocalDateString());
 
       const res = await fetch(`/api/analytics/summary?${params.toString()}`);
       if (res.ok) {

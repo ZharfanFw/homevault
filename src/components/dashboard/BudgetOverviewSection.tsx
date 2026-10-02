@@ -13,7 +13,6 @@ import {
   AlertCircle,
   CheckCircle2,
   ChevronDown,
-  Sparkles,
 } from "lucide-react";
 
 export interface BudgetItem {
@@ -190,7 +189,7 @@ export function BudgetOverviewSection() {
             }}
             className="mt-1 inline-flex items-center gap-1.5 py-1.5 px-3.5 rounded-xl bg-[#3B4252] hover:bg-[#434C5E] text-[#88C0D0] text-xs font-bold transition-colors tap-effect"
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            <Plus className="w-3.5 h-3.5" />
             <span>Mulai Pasang Anggaran Sekarang</span>
           </button>
         </div>

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useApp } from "@/context/AppContext";
 import { X, ArrowDownRight, ArrowUpRight, ArrowLeftRight, Check, Calendar, StickyNote } from "lucide-react";
 import { CategoryIcon } from "@/lib/utils/icons";
-import { parseAmountInput, formatAmountInput } from "@/lib/utils/format";
+import { parseAmountInput, formatAmountInput, getLocalDateString } from "@/lib/utils/format";
 
 interface WalletOption {
   id: string;
@@ -36,9 +36,7 @@ export function QuickAddModal() {
   const [walletId, setWalletId] = useState<string>("");
   const [destinationWalletId, setDestinationWalletId] = useState<string>("");
   const [categoryId, setCategoryId] = useState<string>("");
-  const [date, setDate] = useState<string>(
-    new Date().toISOString().split("T")[0]
-  );
+  const [date, setDate] = useState<string>(getLocalDateString());
   const [notes, setNotes] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -53,7 +51,7 @@ export function QuickAddModal() {
       setAmountStr("");
       setNotes("");
       setError("");
-      setDate(new Date().toISOString().split("T")[0]);
+      setDate(getLocalDateString());
 
       // Fetch options
       setIsLoadingOptions(true);

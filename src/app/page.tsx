@@ -14,6 +14,7 @@ import {
 } from "@/components/analytics/ExpenseCategoryBreakdown";
 import { WalletModal } from "@/components/modals/WalletModal";
 import { EditTransactionModal, TransactionDetail } from "@/components/modals/EditTransactionModal";
+import { BudgetOverviewSection } from "@/components/dashboard/BudgetOverviewSection";
 import { ChevronRight, Repeat, Target, CreditCard } from "lucide-react";
 import Link from "next/link";
 
@@ -109,6 +110,9 @@ export default function DashboardPage() {
         wallets={wallets}
         onAddWallet={() => setIsWalletModalOpen(true)}
       />
+
+      {/* Target Anggaran Bulanan (Set & Monitor Budget) */}
+      <BudgetOverviewSection />
 
       {/* 3 Core Financial Modules Quick Access */}
       <div className="mt-6">

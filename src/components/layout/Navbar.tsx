@@ -2,8 +2,8 @@
 
 import React from "react";
 import { useApp } from "@/context/AppContext";
-import { ChevronLeft, ChevronRight, ShieldCheck } from "lucide-react";
-import { getMonthName } from "@/lib/utils/format";
+import { ChevronLeft, ChevronRight, ShieldCheck, Calendar } from "lucide-react";
+import { getMonthName, getTodayFormatted } from "@/lib/utils/format";
 
 export function Navbar({
   showMonthSelector = true,
@@ -37,7 +37,13 @@ export function Navbar({
     <header className="sticky top-0 z-30 pt-safe px-4 pb-3.5 glass border-b border-[#434C5E]/70 transition-all">
       <div className="max-w-xl mx-auto flex items-center justify-between gap-2 pt-1">
         {title ? (
-          <h1 className="text-xl font-bold tracking-tight text-[#ECEFF4]">{title}</h1>
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-[#ECEFF4]">{title}</h1>
+            <div className="flex items-center gap-1.5 mt-0.5 text-xs text-[#88C0D0]">
+              <Calendar className="w-3 h-3 text-[#88C0D0]" />
+              <span className="font-medium text-[#D8DEE9]">{getTodayFormatted("long")}</span>
+            </div>
+          </div>
         ) : (
           <div className="flex items-center gap-2.5">
             <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#5E81AC] to-[#88C0D0] flex items-center justify-center font-bold text-[#2E3440] shadow-md shadow-[#88C0D0]/20 text-sm ring-1 ring-[#ECEFF4]/20">
@@ -54,9 +60,11 @@ export function Navbar({
                   </span>
                 )}
               </div>
-              <p className="text-[11px] font-medium text-[#81A1C1] leading-tight mt-0.5 tracking-wide">
-                HomeVault
-              </p>
+              <div className="flex items-center gap-1 mt-1 text-[11px] font-semibold text-[#88C0D0]">
+                <Calendar className="w-3 h-3 text-[#88C0D0]/80 shrink-0" />
+                <span className="hidden sm:inline text-[#D8DEE9]">{getTodayFormatted("long")}</span>
+                <span className="sm:hidden text-[#D8DEE9]">{getTodayFormatted("short")}</span>
+              </div>
             </div>
           </div>
         )}

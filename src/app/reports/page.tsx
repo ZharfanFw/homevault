@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { useApp } from "@/context/AppContext";
-import { formatCurrency, getMonthName, getLocalDateString } from "@/lib/utils/format";
+import { formatCurrency, getMonthName, getLocalDateString, getTodayFormatted } from "@/lib/utils/format";
 import { formatDateRangeLabel } from "@/lib/utils/dateRange";
 import {
   ExpenseCategoryBreakdown,
@@ -22,11 +22,11 @@ import {
   ArrowLeftRight,
   Percent,
   Calendar,
+  CalendarRange,
   ChevronLeft,
   ChevronRight,
   Flame,
   RotateCcw,
-  Sparkles,
 } from "lucide-react";
 import { MonthlyAnnualData, PeakMonthDetails } from "@/app/api/analytics/annual/route";
 
@@ -136,9 +136,15 @@ export default function ReportsPage() {
       {/* Page Header & View Mode Switcher */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h2 className="text-xl font-bold text-[#ECEFF4] tracking-tight">
-            Laporan Keuangan
-          </h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-xl font-bold text-[#ECEFF4] tracking-tight">
+              Laporan Keuangan
+            </h2>
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#2E3440] border border-[#434C5E] text-[11px] font-semibold text-[#88C0D0]">
+              <Calendar className="w-3 h-3 text-[#88C0D0]" />
+              <span>{getTodayFormatted("long")}</span>
+            </span>
+          </div>
           <p className="text-xs text-[#81A1C1] mt-0.5 font-medium">
             {viewMode === "MONTHLY"
               ? "Analisis berkala & perbandingan arus kas"
@@ -166,7 +172,7 @@ export default function ReportsPage() {
                 : "text-[#D8DEE9]/70 hover:text-[#ECEFF4]"
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            <CalendarRange className="w-3.5 h-3.5" />
             <span>Tahunan</span>
           </button>
         </div>

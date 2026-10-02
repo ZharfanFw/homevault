@@ -128,3 +128,25 @@ export function getLocalDateString(d: Date = new Date()): string {
   const day = d.getDate().toString().padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
+
+/**
+ * Returns formatted current day and date string in Indonesian locale
+ * e.g. "Sabtu, 3 Oktober 2026" (long) or "Sabtu, 3 Okt 2026" (short)
+ */
+export function getTodayFormatted(mode: "long" | "short" = "long"): string {
+  const d = new Date();
+  if (mode === "short") {
+    return d.toLocaleDateString("id-ID", {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  }
+  return d.toLocaleDateString("id-ID", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}

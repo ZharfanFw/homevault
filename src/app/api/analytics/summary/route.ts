@@ -204,6 +204,82 @@ export async function GET(req: Request) {
         : null,
     }));
 
+    // 4. Calculate Today's Expenses and Category Breakdown (strictly for today)
+    const todayStr =
+      searchParams.get("today") ||
+      `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, "0")}-${now
+        .getDate()
+        .toString()
+        .padStart(2, "0")}`;
+
+    const todayTransactions = db
+      .select({
+        id: transactions.id,
+        type: transactions.type,
+        amount: transactions.amount,
+        categoryId: transactions.categoryId,
+        categoryName: categories.name,
+        categoryIcon: categories.icon,
+        categoryColor: categories.color,
+      })
+      .from(transactions)
+      .leftJoin(categories, eq(transactions.categoryId, categories.id))
+      .where(
+        and(
+          eq(transactions.userId, user.id),
+          eq(transactions.date, todayStr),
+          eq(transactions.type, "EXPENSE")
+        )
+      )
+      .all();
+
+    let todayExpense = 0;
+    const todayCategoryTotals: Record<
+      string,
+      {
+        categoryId: string;
+        categoryName: string;
+        categoryIcon: string;
+        categoryColor: string;
+        totalAmount: number;
+        transactionCount: number;
+      }
+    > = {};
+
+    for (const t of todayTransactions) {
+      todayExpense += t.amount;
+      const catKey = t.categoryId || "uncategorized";
+      if (!todayCategoryTotals[catKey]) {
+        todayCategoryTotals[catKey] = {
+          categoryId: t.categoryId || "",
+          categoryName: t.categoryName || "Lainnya",
+          categoryIcon: t.categoryIcon || "more-horizontal",
+          categoryColor: t.categoryColor || "#64748b",
+          totalAmount: 0,
+          transactionCount: 0,
+        };
+      }
+      todayCategoryTotals[catKey].totalAmount += t.amount;
+      todayCategoryTotals[catKey].transactionCount += 1;
+    }
+
+    const todayCategoryBreakdown = Object.values(todayCategoryTotals)
+      .map((cat) => ({
+        ...cat,
+        percentage:
+          todayExpense > 0
+            ? Math.round((cat.totalAmount / todayExpense) * 100)
+            : 0,
+      }))
+      .sort((a, b) => b.totalAmount - a.totalAmount);
+
+    const todaySummary = {
+      date: todayStr,
+      totalExpense: todayExpense,
+      transactionCount: todayTransactions.length,
+      categoryBreakdown: todayCategoryBreakdown,
+    };
+
     return NextResponse.json({
       month,
       year,
@@ -214,6 +290,7 @@ export async function GET(req: Request) {
       categoryBreakdown,
       dailyTrends,
       recentTransactions,
+      todaySummary,
     });
   } catch (error) {
     console.error("Analytics summary error:", error);

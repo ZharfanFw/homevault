@@ -9,6 +9,10 @@ import {
   CategoryBreakdownItem,
 } from "@/components/analytics/ExpenseCategoryBreakdown";
 import { DailyTrendChart } from "@/components/analytics/DailyTrendChart";
+import {
+  TodayExpenseCard,
+  TodayExpenseData,
+} from "@/components/analytics/TodayExpenseCard";
 import { AnnualTrendChart } from "@/components/analytics/AnnualTrendChart";
 import { DateRangePickerModal } from "@/components/analytics/DateRangePickerModal";
 import { CategoryIcon } from "@/lib/utils/icons";
@@ -43,6 +47,7 @@ export default function ReportsPage() {
   const [dailyTrends, setDailyTrends] = useState<
     Array<{ day: number; expense: number; income: number }>
   >([]);
+  const [todaySummary, setTodaySummary] = useState<TodayExpenseData | null>(null);
 
   // Annual state
   const [annualYear, setAnnualYear] = useState<number>(selectedYear || new Date().getFullYear());
@@ -73,6 +78,13 @@ export default function ReportsPage() {
         params.set("year", selectedYear.toString());
       }
 
+      // Always pass client local today date so today's stats are accurate
+      const now = new Date();
+      const localToday = `${now.getFullYear()}-${(now.getMonth() + 1)
+        .toString()
+        .padStart(2, "0")}-${now.getDate().toString().padStart(2, "0")}`;
+      params.set("today", localToday);
+
       const res = await fetch(`/api/analytics/summary?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
@@ -81,6 +93,7 @@ export default function ReportsPage() {
         setNetCashflow(data.netCashflow || 0);
         setCategoryBreakdown(data.categoryBreakdown || []);
         setDailyTrends(data.dailyTrends || []);
+        setTodaySummary(data.todaySummary || null);
       }
     } catch (e) {
       console.error("Fetch monthly reports error:", e);
@@ -268,7 +281,13 @@ export default function ReportsPage() {
                 year={selectedYear}
               />
 
-              {/* Category Breakdown */}
+              {/* Today's Expense Card (Expandable Category Breakdown) */}
+              <TodayExpenseCard
+                todayData={todaySummary}
+                isLoading={isLoadingMonthly}
+              />
+
+              {/* Category Breakdown (Period) */}
               <div>
                 <h3 className="text-xs font-bold uppercase tracking-wider text-[#81A1C1] mb-3 px-1">
                   Rincian Pengeluaran per Kategori

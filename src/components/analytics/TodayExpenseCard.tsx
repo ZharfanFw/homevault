@@ -177,11 +177,18 @@ export function TodayExpenseCard({
 
   return (
     <div className="overflow-hidden rounded-3xl bg-[#2E3440] border border-[#434C5E] hover:border-[#88C0D0]/50 transition-all shadow-md group">
-      {/* Clickable Header */}
-      <button
-        type="button"
+      {/* Clickable Header Container */}
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setIsExpanded((prev) => !prev)}
-        className="w-full p-4 sm:p-5 text-left transition-colors hover:bg-[#353C4A]/40 tap-effect"
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setIsExpanded((prev) => !prev);
+          }
+        }}
+        className="w-full p-4 sm:p-5 text-left transition-colors hover:bg-[#353C4A]/40 tap-effect cursor-pointer select-none"
         aria-expanded={isExpanded}
       >
         {/* Top Row: Date controls + Title + Amount */}
@@ -322,7 +329,7 @@ export function TodayExpenseCard({
             />
           </span>
         </div>
-      </button>
+      </div>
 
       {/* Expanded Breakdown Section */}
       {isExpanded && (

@@ -217,6 +217,11 @@ export async function GET(req: Request) {
         id: transactions.id,
         type: transactions.type,
         amount: transactions.amount,
+        notes: transactions.notes,
+        createdAt: transactions.createdAt,
+        walletId: transactions.walletId,
+        walletName: wallets.name,
+        walletColor: wallets.color,
         categoryId: transactions.categoryId,
         categoryName: categories.name,
         categoryIcon: categories.icon,
@@ -224,6 +229,7 @@ export async function GET(req: Request) {
       })
       .from(transactions)
       .leftJoin(categories, eq(transactions.categoryId, categories.id))
+      .leftJoin(wallets, eq(transactions.walletId, wallets.id))
       .where(
         and(
           eq(transactions.userId, user.id),
@@ -231,6 +237,7 @@ export async function GET(req: Request) {
           eq(transactions.type, "EXPENSE")
         )
       )
+      .orderBy(desc(transactions.createdAt))
       .all();
 
     let todayExpense = 0;
@@ -243,6 +250,14 @@ export async function GET(req: Request) {
         categoryColor: string;
         totalAmount: number;
         transactionCount: number;
+        transactions: Array<{
+          id: string;
+          amount: number;
+          notes: string | null;
+          walletName: string | null;
+          walletColor: string | null;
+          createdAt: Date | number;
+        }>;
       }
     > = {};
 
@@ -257,10 +272,19 @@ export async function GET(req: Request) {
           categoryColor: t.categoryColor || "#64748b",
           totalAmount: 0,
           transactionCount: 0,
+          transactions: [],
         };
       }
       todayCategoryTotals[catKey].totalAmount += t.amount;
       todayCategoryTotals[catKey].transactionCount += 1;
+      todayCategoryTotals[catKey].transactions.push({
+        id: t.id,
+        amount: t.amount,
+        notes: t.notes || null,
+        walletName: t.walletName || null,
+        walletColor: t.walletColor || null,
+        createdAt: t.createdAt,
+      });
     }
 
     const todayCategoryBreakdown = Object.values(todayCategoryTotals)

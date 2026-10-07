@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { formatCurrency, getLocalDateString } from "@/lib/utils/format";
 import { CategoryIcon } from "@/lib/utils/icons";
-import { ChevronDown, ChevronLeft, ChevronRight, Calendar, RotateCcw } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Calendar, RotateCcw, X } from "lucide-react";
 
 export interface TodayTransactionDetail {
   id: string;
@@ -52,6 +52,142 @@ function changeDateByDays(dateStr: string, days: number): string {
   }
 }
 
+function DatePickerModal({
+  isOpen,
+  onClose,
+  selectedDate,
+  todayStr,
+  onSelectDate,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedDate: string;
+  todayStr: string;
+  onSelectDate: (date: string) => void;
+}) {
+  const [tempDate, setTempDate] = useState(selectedDate);
+
+  useEffect(() => {
+    if (isOpen) {
+      setTempDate(selectedDate);
+    }
+  }, [isOpen, selectedDate]);
+
+  if (!isOpen) return null;
+
+  const yesterdayStr = changeDateByDays(todayStr, -1);
+  const threeDaysAgoStr = changeDateByDays(todayStr, -3);
+  const sevenDaysAgoStr = changeDateByDays(todayStr, -7);
+
+  const presets = [
+    { label: "Hari Ini", date: todayStr },
+    { label: "Kemarin", date: yesterdayStr },
+    { label: "3 Hari Lalu", date: threeDaysAgoStr },
+    { label: "7 Hari Lalu", date: sevenDaysAgoStr },
+  ];
+
+  const handleApply = (dateToApply: string) => {
+    if (dateToApply && dateToApply <= todayStr) {
+      onSelectDate(dateToApply);
+      onClose();
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+      <div className="w-full max-w-sm bg-[#2E3440] border border-[#434C5E] rounded-3xl p-5 shadow-2xl relative">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 text-[#D8DEE9]/60 hover:text-[#ECEFF4] hover:bg-[#3B4252] rounded-full transition-colors tap-effect"
+          aria-label="Tutup"
+        >
+          <X className="w-4 h-4" />
+        </button>
+
+        <div className="flex items-center gap-2.5 mb-3">
+          <div className="w-9 h-9 rounded-xl bg-[#88C0D0]/15 text-[#88C0D0] flex items-center justify-center">
+            <Calendar className="w-4 h-4" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-[#ECEFF4] leading-tight">
+              Pilih Tanggal Pengeluaran
+            </h3>
+            <p className="text-[11px] text-[#81A1C1]">
+              Lihat riwayat transaksi harian
+            </p>
+          </div>
+        </div>
+
+        {/* Quick Presets */}
+        <div className="mb-4">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[#81A1C1] block mb-1.5">
+            Pilihan Cepat
+          </span>
+          <div className="grid grid-cols-2 gap-1.5">
+            {presets.map((p) => {
+              const isSelected = tempDate === p.date;
+              return (
+                <button
+                  key={p.date}
+                  type="button"
+                  onClick={() => {
+                    setTempDate(p.date);
+                    handleApply(p.date);
+                  }}
+                  className={`py-2 px-2.5 rounded-xl text-xs font-semibold border transition-all text-center tap-effect ${
+                    isSelected
+                      ? "bg-[#88C0D0] text-[#2E3440] border-[#88C0D0] shadow-sm font-bold"
+                      : "bg-[#242933] text-[#ECEFF4] border-[#434C5E] hover:border-[#88C0D0]/40"
+                  }`}
+                >
+                  {p.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Date Input */}
+        <div className="mb-4">
+          <label
+            htmlFor="date-picker-manual"
+            className="text-[10px] font-bold uppercase tracking-wider text-[#81A1C1] block mb-1.5"
+          >
+            Pilih Tanggal Kalender
+          </label>
+          <input
+            id="date-picker-manual"
+            type="date"
+            value={tempDate}
+            max={todayStr}
+            onChange={(e) => setTempDate(e.target.value)}
+            className="w-full p-2.5 rounded-xl bg-[#242933] border border-[#434C5E] text-[#ECEFF4] font-mono text-xs focus:border-[#88C0D0] outline-none transition-colors"
+          />
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex-1 py-2 rounded-xl bg-[#3B4252] hover:bg-[#434C5E] text-[#D8DEE9] text-xs font-semibold transition-colors tap-effect"
+          >
+            Batal
+          </button>
+          <button
+            type="button"
+            onClick={() => handleApply(tempDate)}
+            className="flex-1 py-2 rounded-xl bg-gradient-to-r from-[#5E81AC] to-[#88C0D0] text-[#2E3440] text-xs font-bold shadow hover:brightness-110 active:scale-95 transition-all tap-effect"
+          >
+            Terapkan
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function TodayExpenseCard({
   todayData,
   isLoading = false,
@@ -60,6 +196,7 @@ export function TodayExpenseCard({
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
   const [dayData, setDayData] = useState<TodayExpenseData | null>(todayData);
   const [isFetchingDate, setIsFetchingDate] = useState(false);
+  const [isDatePickerModalOpen, setIsDatePickerModalOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<Record<string, boolean>>({});
 
@@ -176,160 +313,149 @@ export function TodayExpenseCard({
   const transactionCount = dayData?.transactionCount ?? 0;
 
   return (
-    <div className="overflow-hidden rounded-3xl bg-[#2E3440] border border-[#434C5E] hover:border-[#88C0D0]/50 transition-all shadow-md group">
-      {/* Clickable Header Container */}
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={() => setIsExpanded((prev) => !prev)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            setIsExpanded((prev) => !prev);
-          }
-        }}
-        className="w-full p-4 sm:p-5 text-left transition-colors hover:bg-[#353C4A]/40 tap-effect cursor-pointer select-none"
-        aria-expanded={isExpanded}
-      >
-        {/* Top Row: Date controls + Title + Amount */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-start gap-2.5 min-w-0">
-            {/* Date Navigator Controls */}
-            <div
-              className="flex items-center bg-[#242933] border border-[#434C5E] rounded-xl p-0.5 shrink-0 shadow-inner"
-              onClick={(e) => e.stopPropagation()}
+    <div className="space-y-2.5">
+      {/* 1. SEPARATE DATE NAVIGATION TOOLBAR */}
+      <div className="flex items-center justify-between gap-2 p-2 sm:p-2.5 rounded-2xl bg-[#2E3440] border border-[#434C5E] shadow-sm">
+        {/* Left: Navigation Arrow Controls (< and > paired together with comfortable touch target) */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            type="button"
+            onClick={handlePrevDay}
+            title="Hari Sebelumnya"
+            aria-label="Hari Sebelumnya"
+            className="w-10 h-10 rounded-xl bg-[#242933] border border-[#434C5E] flex items-center justify-center text-[#D8DEE9] hover:text-[#ECEFF4] hover:bg-[#3B4252] active:scale-95 transition-all tap-effect"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          <button
+            type="button"
+            onClick={handleNextDay}
+            disabled={!canGoNext}
+            title={canGoNext ? "Hari Berikutnya" : "Sudah di tanggal hari ini"}
+            aria-label="Hari Berikutnya"
+            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all tap-effect ${
+              canGoNext
+                ? "bg-[#242933] border border-[#434C5E] text-[#D8DEE9] hover:text-[#ECEFF4] hover:bg-[#3B4252] active:scale-95"
+                : "bg-[#242933]/50 border border-[#434C5E]/30 text-[#4C566A]/40 cursor-not-allowed"
+            }`}
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Center: Selected Date Label & Status Badge */}
+        <div className="text-center min-w-0 px-1 flex-1">
+          <div className="flex items-center justify-center gap-1.5 flex-wrap">
+            <span className="text-xs sm:text-sm font-bold text-[#ECEFF4] truncate">
+              {formatDateLabel(selectedDate)}
+            </span>
+            {isToday ? (
+              <span className="px-1.5 py-0.5 rounded-md text-[9px] font-extrabold bg-[#88C0D0]/15 text-[#88C0D0] border border-[#88C0D0]/30 uppercase tracking-wider shrink-0">
+                Hari Ini
+              </span>
+            ) : isYesterday ? (
+              <span className="px-1.5 py-0.5 rounded-md text-[9px] font-extrabold bg-[#EBCB8B]/15 text-[#EBCB8B] border border-[#EBCB8B]/30 uppercase tracking-wider shrink-0">
+                Kemarin
+              </span>
+            ) : null}
+          </div>
+        </div>
+
+        {/* Right: Calendar Date Picker & Quick Reset (Separated on the right side) */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {!isToday && (
+            <button
+              type="button"
+              onClick={handleResetToday}
+              title="Kembali ke hari ini"
+              className="h-10 px-2 sm:px-2.5 rounded-xl text-[11px] font-bold bg-[#88C0D0]/10 text-[#88C0D0] border border-[#88C0D0]/30 hover:bg-[#88C0D0]/20 active:scale-95 transition-all flex items-center gap-1 tap-effect"
             >
-              {/* Prev Day Arrow Button */}
-              <button
-                type="button"
-                onClick={handlePrevDay}
-                title="Hari Sebelumnya (Kemarin)"
-                aria-label="Hari Sebelumnya"
-                className="p-1.5 rounded-lg text-[#D8DEE9] hover:text-[#ECEFF4] hover:bg-[#3B4252] active:scale-95 transition-all"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" />
-              </button>
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Hari Ini</span>
+            </button>
+          )}
 
-              {/* Date Picker Button with Native HTML5 Input Overlay */}
-              <div className="relative flex items-center justify-center">
-                <button
-                  type="button"
-                  title="Pilih Tanggal di Kalender"
-                  aria-label="Pilih Tanggal di Kalender"
-                  className="p-1.5 rounded-lg text-[#88C0D0] hover:text-[#ECEFF4] hover:bg-[#3B4252] transition-colors"
-                >
-                  <Calendar className="w-3.5 h-3.5" />
-                </button>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  max={todayStr}
-                  onChange={(e) => {
-                    if (e.target.value) handleSelectDate(e.target.value);
-                  }}
-                  onClick={(e) => e.stopPropagation()}
-                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
-                  aria-label="Pilih tanggal"
-                />
+          {/* Dedicated Calendar Button that opens DatePickerModal */}
+          <button
+            type="button"
+            onClick={() => setIsDatePickerModalOpen(true)}
+            title="Pilih Tanggal di Kalender"
+            aria-label="Pilih Tanggal di Kalender"
+            className="h-10 px-2.5 sm:px-3 rounded-xl bg-[#242933] border border-[#434C5E] text-[#88C0D0] hover:text-[#ECEFF4] hover:bg-[#3B4252] active:scale-95 transition-all flex items-center gap-1.5 tap-effect shadow-inner"
+          >
+            <Calendar className="w-4 h-4 text-[#88C0D0]" />
+            <span className="text-xs font-semibold hidden sm:inline">Kalender</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 2. PURE CLICKABLE EXPENSE CARD (NO DATE CONTROLS INSIDE) */}
+      <div className="overflow-hidden rounded-3xl bg-[#2E3440] border border-[#434C5E] hover:border-[#88C0D0]/50 transition-all shadow-md group">
+        <button
+          type="button"
+          onClick={() => setIsExpanded((prev) => !prev)}
+          className="w-full p-4 sm:p-5 text-left transition-colors hover:bg-[#353C4A]/40 tap-effect"
+          aria-expanded={isExpanded}
+        >
+          {/* Top Row: Title + Date vs Amount */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-[#88C0D0]/15 border border-[#88C0D0]/30 text-[#88C0D0] flex items-center justify-center shrink-0">
+                <Calendar className="w-4 h-4" />
               </div>
-
-              {/* Next Day Arrow Button */}
-              <button
-                type="button"
-                onClick={handleNextDay}
-                disabled={!canGoNext}
-                title={canGoNext ? "Hari Berikutnya" : "Sudah di tanggal hari ini"}
-                aria-label="Hari Berikutnya"
-                className={`p-1.5 rounded-lg transition-all ${
-                  canGoNext
-                    ? "text-[#D8DEE9] hover:text-[#ECEFF4] hover:bg-[#3B4252] active:scale-95"
-                    : "text-[#4C566A]/40 cursor-not-allowed"
-                }`}
-              >
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
+              <div className="min-w-0">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#81A1C1] block leading-none">
+                  {isToday
+                    ? "Total Pengeluaran Hari Ini"
+                    : isYesterday
+                    ? "Total Pengeluaran Kemarin"
+                    : "Total Pengeluaran Harian"}
+                </span>
+                <span className="text-xs sm:text-sm font-semibold text-[#ECEFF4] mt-1 block truncate">
+                  {formatDateLabel(selectedDate)}
+                </span>
+              </div>
             </div>
 
-            {/* Title & Date Label */}
-            <div className="min-w-0 pt-0.5">
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#81A1C1] leading-none">
-                  {isToday
-                    ? "Pengeluaran Hari Ini"
-                    : isYesterday
-                    ? "Pengeluaran Kemarin"
-                    : "Pengeluaran Harian"}
-                </span>
-
-                {isToday ? (
-                  <span className="px-1.5 py-0.2 rounded-md text-[9px] font-extrabold bg-[#88C0D0]/15 text-[#88C0D0] border border-[#88C0D0]/30 uppercase">
-                    Hari Ini
-                  </span>
-                ) : isYesterday ? (
-                  <span className="px-1.5 py-0.2 rounded-md text-[9px] font-extrabold bg-[#EBCB8B]/15 text-[#EBCB8B] border border-[#EBCB8B]/30 uppercase">
-                    Kemarin
-                  </span>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleResetToday();
-                    }}
-                    className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-md text-[9px] font-bold bg-[#88C0D0]/10 text-[#88C0D0] border border-[#88C0D0]/30 hover:bg-[#88C0D0]/20 transition-all"
-                    title="Kembali ke hari ini"
-                  >
-                    <RotateCcw className="w-2.5 h-2.5" />
-                    <span>Hari Ini</span>
-                  </button>
-                )}
+            <div className="text-right shrink-0">
+              <div
+                className={`text-lg sm:text-xl font-black font-mono text-[#ECEFF4] tracking-tight transition-opacity ${
+                  isFetchingDate ? "opacity-50 animate-pulse" : ""
+                }`}
+              >
+                {formatCurrency(totalExpense)}
               </div>
-
-              <span className="text-xs font-semibold text-[#ECEFF4] mt-1 block truncate">
-                {formatDateLabel(selectedDate)}
+              <span className="text-[10px] font-mono text-[#81A1C1]">
+                {isFetchingDate
+                  ? "Memuat..."
+                  : totalExpense > 0
+                  ? `${transactionCount} transaksi`
+                  : "Nihil"}
               </span>
             </div>
           </div>
 
-          {/* Amount & Count */}
-          <div className="text-right shrink-0 pt-0.5">
-            <div
-              className={`text-lg sm:text-xl font-black font-mono text-[#ECEFF4] tracking-tight transition-opacity ${
-                isFetchingDate ? "opacity-50 animate-pulse" : ""
-              }`}
-            >
-              {formatCurrency(totalExpense)}
-            </div>
-            <span className="text-[10px] font-mono text-[#81A1C1]">
+          {/* Bottom Helper Bar & Action Toggle */}
+          <div className="mt-3 pt-2.5 border-t border-[#434C5E]/50 flex items-center justify-between text-xs">
+            <span className="text-[11px] text-[#81A1C1] truncate">
               {isFetchingDate
-                ? "Memuat..."
+                ? "Memuat riwayat harian..."
                 : totalExpense > 0
-                ? `${transactionCount} transaksi`
-                : "Nihil"}
+                ? `${categories.length} kategori pengeluaran • Klik untuk rincian`
+                : "Belum ada transaksi pengeluaran"}
+            </span>
+
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#88C0D0] group-hover:text-[#8FBCBB] shrink-0">
+              <span>{isExpanded ? "Tutup Rincian" : "Lihat Rincian"}</span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                  isExpanded ? "rotate-180" : ""
+                }`}
+              />
             </span>
           </div>
-        </div>
-
-        {/* Bottom Helper Bar & Action Toggle */}
-        <div className="mt-3 pt-2.5 border-t border-[#434C5E]/50 flex items-center justify-between text-xs">
-          <span className="text-[11px] text-[#81A1C1] truncate">
-            {isFetchingDate
-              ? "Memuat riwayat harian..."
-              : totalExpense > 0
-              ? `${categories.length} kategori pengeluaran`
-              : "Belum ada transaksi pengeluaran"}
-          </span>
-
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#88C0D0] group-hover:text-[#8FBCBB] shrink-0">
-            <span>{isExpanded ? "Tutup Rincian" : "Lihat Rincian"}</span>
-            <ChevronDown
-              className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                isExpanded ? "rotate-180" : ""
-              }`}
-            />
-          </span>
-        </div>
-      </div>
+        </button>
 
       {/* Expanded Breakdown Section */}
       {isExpanded && (
@@ -514,5 +640,15 @@ export function TodayExpenseCard({
         </div>
       )}
     </div>
-  );
+
+    {/* Date Picker Modal */}
+    <DatePickerModal
+      isOpen={isDatePickerModalOpen}
+      onClose={() => setIsDatePickerModalOpen(false)}
+      selectedDate={selectedDate}
+      todayStr={todayStr}
+      onSelectDate={handleSelectDate}
+    />
+  </div>
+);
 }

@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
-import { formatCurrency } from "@/lib/utils/format";
+import React, { useState, useEffect, useCallback } from "react";
+import { formatCurrency, getLocalDateString } from "@/lib/utils/format";
 import { CategoryIcon } from "@/lib/utils/icons";
-import { ChevronDown, Calendar } from "lucide-react";
+import { ChevronDown, ChevronLeft, ChevronRight, Calendar, RotateCcw } from "lucide-react";
 
 export interface TodayTransactionDetail {
   id: string;
@@ -37,26 +37,104 @@ interface TodayExpenseCardProps {
   isLoading?: boolean;
 }
 
+// Date helper: change date by N days
+function changeDateByDays(dateStr: string, days: number): string {
+  try {
+    const [y, m, d] = dateStr.split("-").map(Number);
+    const date = new Date(y, m - 1, d);
+    date.setDate(date.getDate() + days);
+    const nextY = date.getFullYear();
+    const nextM = (date.getMonth() + 1).toString().padStart(2, "0");
+    const nextD = date.getDate().toString().padStart(2, "0");
+    return `${nextY}-${nextM}-${nextD}`;
+  } catch {
+    return dateStr;
+  }
+}
+
 export function TodayExpenseCard({
   todayData,
   isLoading = false,
 }: TodayExpenseCardProps) {
+  const todayStr = getLocalDateString();
+  const [selectedDate, setSelectedDate] = useState<string>(todayStr);
+  const [dayData, setDayData] = useState<TodayExpenseData | null>(todayData);
+  const [isFetchingDate, setIsFetchingDate] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [expandedCategoryIds, setExpandedCategoryIds] = useState<Record<string, boolean>>({});
 
-  // Format date readable (e.g. "Sabtu, 3 Oktober 2026")
+  // When initial todayData arrives or updates from parent, sync if on today
+  useEffect(() => {
+    if (todayData && selectedDate === todayStr) {
+      setDayData(todayData);
+    }
+  }, [todayData, selectedDate, todayStr]);
+
+  // Fetch daily data when date changes
+  const fetchDailyData = useCallback(async (targetDate: string) => {
+    try {
+      setIsFetchingDate(true);
+      const res = await fetch(`/api/analytics/summary?today=${targetDate}&dailyOnly=true`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.todaySummary) {
+          setDayData(json.todaySummary);
+        }
+      }
+    } catch (err) {
+      console.error("Gagal memuat data pengeluaran harian:", err);
+    } finally {
+      setIsFetchingDate(false);
+    }
+  }, []);
+
+  const handleSelectDate = (newDate: string) => {
+    if (!newDate || newDate === selectedDate) return;
+    setSelectedDate(newDate);
+    fetchDailyData(newDate);
+  };
+
+  const handlePrevDay = () => {
+    const prevDate = changeDateByDays(selectedDate, -1);
+    handleSelectDate(prevDate);
+  };
+
+  const handleNextDay = () => {
+    if (selectedDate >= todayStr) return;
+    const nextDate = changeDateByDays(selectedDate, 1);
+    handleSelectDate(nextDate);
+  };
+
+  const handleResetToday = () => {
+    if (selectedDate === todayStr) return;
+    setSelectedDate(todayStr);
+    if (todayData) {
+      setDayData(todayData);
+    } else {
+      fetchDailyData(todayStr);
+    }
+  };
+
+  // Date comparison
+  const isToday = selectedDate === todayStr;
+  const yesterdayStr = changeDateByDays(todayStr, -1);
+  const isYesterday = selectedDate === yesterdayStr;
+  const canGoNext = selectedDate < todayStr;
+
+  // Format date readable (e.g. "Rabu, 7 Oktober 2026")
   const formatDateLabel = (dateStr?: string) => {
     if (!dateStr) return "Hari Ini";
     try {
-      const d = new Date(dateStr + "T00:00:00");
-      return d.toLocaleDateString("id-ID", {
+      const [y, m, d] = dateStr.split("-").map(Number);
+      const dateObj = new Date(y, m - 1, d);
+      return dateObj.toLocaleDateString("id-ID", {
         weekday: "long",
         day: "numeric",
         month: "short",
         year: "numeric",
       });
     } catch {
-      return "Hari Ini";
+      return dateStr;
     }
   };
 
@@ -81,7 +159,7 @@ export function TodayExpenseCard({
     }));
   };
 
-  if (isLoading) {
+  if (isLoading && !dayData) {
     return (
       <div className="p-4 sm:p-5 rounded-3xl bg-[#2E3440] border border-[#434C5E] animate-pulse">
         <div className="flex items-center justify-between">
@@ -93,9 +171,9 @@ export function TodayExpenseCard({
     );
   }
 
-  const totalExpense = todayData?.totalExpense ?? 0;
-  const categories = todayData?.categoryBreakdown ?? [];
-  const transactionCount = todayData?.transactionCount ?? 0;
+  const totalExpense = dayData?.totalExpense ?? 0;
+  const categories = dayData?.categoryBreakdown ?? [];
+  const transactionCount = dayData?.transactionCount ?? 0;
 
   return (
     <div className="overflow-hidden rounded-3xl bg-[#2E3440] border border-[#434C5E] hover:border-[#88C0D0]/50 transition-all shadow-md group">
@@ -106,28 +184,121 @@ export function TodayExpenseCard({
         className="w-full p-4 sm:p-5 text-left transition-colors hover:bg-[#353C4A]/40 tap-effect"
         aria-expanded={isExpanded}
       >
-        {/* Top Row: Title + Date vs Amount */}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-xl bg-[#88C0D0]/15 border border-[#88C0D0]/30 text-[#88C0D0] flex items-center justify-center shrink-0">
-              <Calendar className="w-4 h-4" />
+        {/* Top Row: Date controls + Title + Amount */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-start gap-2.5 min-w-0">
+            {/* Date Navigator Controls */}
+            <div
+              className="flex items-center bg-[#242933] border border-[#434C5E] rounded-xl p-0.5 shrink-0 shadow-inner"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Prev Day Arrow Button */}
+              <button
+                type="button"
+                onClick={handlePrevDay}
+                title="Hari Sebelumnya (Kemarin)"
+                aria-label="Hari Sebelumnya"
+                className="p-1.5 rounded-lg text-[#D8DEE9] hover:text-[#ECEFF4] hover:bg-[#3B4252] active:scale-95 transition-all"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+              </button>
+
+              {/* Date Picker Button with Native HTML5 Input Overlay */}
+              <div className="relative flex items-center justify-center">
+                <button
+                  type="button"
+                  title="Pilih Tanggal di Kalender"
+                  aria-label="Pilih Tanggal di Kalender"
+                  className="p-1.5 rounded-lg text-[#88C0D0] hover:text-[#ECEFF4] hover:bg-[#3B4252] transition-colors"
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                </button>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  max={todayStr}
+                  onChange={(e) => {
+                    if (e.target.value) handleSelectDate(e.target.value);
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                  aria-label="Pilih tanggal"
+                />
+              </div>
+
+              {/* Next Day Arrow Button */}
+              <button
+                type="button"
+                onClick={handleNextDay}
+                disabled={!canGoNext}
+                title={canGoNext ? "Hari Berikutnya" : "Sudah di tanggal hari ini"}
+                aria-label="Hari Berikutnya"
+                className={`p-1.5 rounded-lg transition-all ${
+                  canGoNext
+                    ? "text-[#D8DEE9] hover:text-[#ECEFF4] hover:bg-[#3B4252] active:scale-95"
+                    : "text-[#4C566A]/40 cursor-not-allowed"
+                }`}
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
             </div>
-            <div className="min-w-0">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#81A1C1] block leading-none">
-                Pengeluaran Hari Ini
-              </span>
+
+            {/* Title & Date Label */}
+            <div className="min-w-0 pt-0.5">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#81A1C1] leading-none">
+                  {isToday
+                    ? "Pengeluaran Hari Ini"
+                    : isYesterday
+                    ? "Pengeluaran Kemarin"
+                    : "Pengeluaran Harian"}
+                </span>
+
+                {isToday ? (
+                  <span className="px-1.5 py-0.2 rounded-md text-[9px] font-extrabold bg-[#88C0D0]/15 text-[#88C0D0] border border-[#88C0D0]/30 uppercase">
+                    Hari Ini
+                  </span>
+                ) : isYesterday ? (
+                  <span className="px-1.5 py-0.2 rounded-md text-[9px] font-extrabold bg-[#EBCB8B]/15 text-[#EBCB8B] border border-[#EBCB8B]/30 uppercase">
+                    Kemarin
+                  </span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleResetToday();
+                    }}
+                    className="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-md text-[9px] font-bold bg-[#88C0D0]/10 text-[#88C0D0] border border-[#88C0D0]/30 hover:bg-[#88C0D0]/20 transition-all"
+                    title="Kembali ke hari ini"
+                  >
+                    <RotateCcw className="w-2.5 h-2.5" />
+                    <span>Hari Ini</span>
+                  </button>
+                )}
+              </div>
+
               <span className="text-xs font-semibold text-[#ECEFF4] mt-1 block truncate">
-                {formatDateLabel(todayData?.date)}
+                {formatDateLabel(selectedDate)}
               </span>
             </div>
           </div>
 
-          <div className="text-right shrink-0">
-            <div className="text-lg sm:text-xl font-black font-mono text-[#ECEFF4] tracking-tight">
+          {/* Amount & Count */}
+          <div className="text-right shrink-0 pt-0.5">
+            <div
+              className={`text-lg sm:text-xl font-black font-mono text-[#ECEFF4] tracking-tight transition-opacity ${
+                isFetchingDate ? "opacity-50 animate-pulse" : ""
+              }`}
+            >
               {formatCurrency(totalExpense)}
             </div>
             <span className="text-[10px] font-mono text-[#81A1C1]">
-              {totalExpense > 0 ? `${transactionCount} transaksi` : "Nihil"}
+              {isFetchingDate
+                ? "Memuat..."
+                : totalExpense > 0
+                ? `${transactionCount} transaksi`
+                : "Nihil"}
             </span>
           </div>
         </div>
@@ -135,7 +306,9 @@ export function TodayExpenseCard({
         {/* Bottom Helper Bar & Action Toggle */}
         <div className="mt-3 pt-2.5 border-t border-[#434C5E]/50 flex items-center justify-between text-xs">
           <span className="text-[11px] text-[#81A1C1] truncate">
-            {totalExpense > 0
+            {isFetchingDate
+              ? "Memuat riwayat harian..."
+              : totalExpense > 0
               ? `${categories.length} kategori pengeluaran`
               : "Belum ada transaksi pengeluaran"}
           </span>
@@ -157,10 +330,10 @@ export function TodayExpenseCard({
           {categories.length === 0 ? (
             <div className="p-3.5 rounded-xl bg-[#242933]/70 border border-[#434C5E]/50 text-center text-xs text-[#81A1C1] space-y-1">
               <p className="font-semibold text-[#A3BE8C]">
-                Belum ada transaksi pengeluaran hari ini.
+                Belum ada transaksi pengeluaran pada tanggal ini.
               </p>
               <p className="text-[11px] text-[#D8DEE9]/70">
-                Pengeluaran yang dicatat pada hari ini akan otomatis dirinci di sini.
+                {formatDateLabel(selectedDate)}
               </p>
             </div>
           ) : (
@@ -168,7 +341,13 @@ export function TodayExpenseCard({
               {/* Multi-Segment Proportional Visual Bar */}
               <div className="space-y-1">
                 <div className="flex justify-between text-[11px] font-medium text-[#81A1C1]">
-                  <span>Proporsi Kategori Hari Ini</span>
+                  <span>
+                    {isToday
+                      ? "Proporsi Kategori Hari Ini"
+                      : isYesterday
+                      ? "Proporsi Kategori Kemarin"
+                      : "Proporsi Kategori"}
+                  </span>
                   <span>100%</span>
                 </div>
                 <div className="h-2 w-full rounded-full bg-[#242933] flex overflow-hidden p-0.5 border border-[#434C5E]">
@@ -261,7 +440,13 @@ export function TodayExpenseCard({
                       {isCatExpanded && (
                         <div className="pt-2 pb-0.5 border-t border-[#434C5E]/50 animate-fade-in space-y-1.5">
                           <div className="flex items-center justify-between px-0.5 text-[10px] font-semibold text-[#81A1C1] uppercase tracking-wider">
-                            <span>Riwayat Hari Ini</span>
+                            <span>
+                              {isToday
+                                ? "Riwayat Hari Ini"
+                                : isYesterday
+                                ? "Riwayat Kemarin"
+                                : `Riwayat (${formatDateLabel(selectedDate)})`}
+                            </span>
                             <span className="font-mono">{txList.length} transaksi</span>
                           </div>
 

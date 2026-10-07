@@ -3,6 +3,98 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { db, transactions, wallets, categories } from "@/lib/db";
 import { eq, and, gte, lte, desc, sql } from "drizzle-orm";
 
+function getDailyExpenseSummary(userId: string, dateStr: string) {
+  const dayTransactions = db
+    .select({
+      id: transactions.id,
+      type: transactions.type,
+      amount: transactions.amount,
+      notes: transactions.notes,
+      createdAt: transactions.createdAt,
+      walletId: transactions.walletId,
+      walletName: wallets.name,
+      walletColor: wallets.color,
+      categoryId: transactions.categoryId,
+      categoryName: categories.name,
+      categoryIcon: categories.icon,
+      categoryColor: categories.color,
+    })
+    .from(transactions)
+    .leftJoin(categories, eq(transactions.categoryId, categories.id))
+    .leftJoin(wallets, eq(transactions.walletId, wallets.id))
+    .where(
+      and(
+        eq(transactions.userId, userId),
+        eq(transactions.date, dateStr),
+        eq(transactions.type, "EXPENSE")
+      )
+    )
+    .orderBy(desc(transactions.createdAt))
+    .all();
+
+  let dayExpense = 0;
+  const dayCategoryTotals: Record<
+    string,
+    {
+      categoryId: string;
+      categoryName: string;
+      categoryIcon: string;
+      categoryColor: string;
+      totalAmount: number;
+      transactionCount: number;
+      transactions: Array<{
+        id: string;
+        amount: number;
+        notes: string | null;
+        walletName: string | null;
+        walletColor: string | null;
+        createdAt: Date | number;
+      }>;
+    }
+  > = {};
+
+  for (const t of dayTransactions) {
+    dayExpense += t.amount;
+    const catKey = t.categoryId || "uncategorized";
+    if (!dayCategoryTotals[catKey]) {
+      dayCategoryTotals[catKey] = {
+        categoryId: t.categoryId || "",
+        categoryName: t.categoryName || "Lainnya",
+        categoryIcon: t.categoryIcon || "more-horizontal",
+        categoryColor: t.categoryColor || "#64748b",
+        totalAmount: 0,
+        transactionCount: 0,
+        transactions: [],
+      };
+    }
+    dayCategoryTotals[catKey].totalAmount += t.amount;
+    dayCategoryTotals[catKey].transactionCount += 1;
+    dayCategoryTotals[catKey].transactions.push({
+      id: t.id,
+      amount: t.amount,
+      notes: t.notes || null,
+      walletName: t.walletName || null,
+      walletColor: t.walletColor || null,
+      createdAt: t.createdAt,
+    });
+  }
+
+  const dayCategoryBreakdown = Object.values(dayCategoryTotals)
+    .map((cat) => ({
+      ...cat,
+      percentage:
+        dayExpense > 0 ? Math.round((cat.totalAmount / dayExpense) * 100) : 0,
+    }))
+    .sort((a, b) => b.totalAmount - a.totalAmount);
+
+  return {
+    date: dateStr,
+    totalExpense: dayExpense,
+    transactionCount: dayTransactions.length,
+    categoryBreakdown: dayCategoryBreakdown,
+  };
+}
+
 export async function GET(req: Request) {
   try {
     const user = await getCurrentUser();
@@ -12,6 +104,20 @@ export async function GET(req: Request) {
 
     const { searchParams } = new URL(req.url);
     const now = new Date();
+
+    const todayStr =
+      searchParams.get("today") ||
+      `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, "0")}-${now
+        .getDate()
+        .toString()
+        .padStart(2, "0")}`;
+
+    // Fast-path: only fetch daily summary if requested
+    if (searchParams.get("dailyOnly") === "true") {
+      const todaySummary = getDailyExpenseSummary(user.id, todayStr);
+      return NextResponse.json({ todaySummary });
+    }
+
     const month = parseInt(searchParams.get("month") || (now.getMonth() + 1).toString(), 10);
     const year = parseInt(searchParams.get("year") || now.getFullYear().toString(), 10);
     const customFrom = searchParams.get("from");
@@ -205,104 +311,7 @@ export async function GET(req: Request) {
     }));
 
     // 4. Calculate Today's Expenses and Category Breakdown (strictly for today)
-    const todayStr =
-      searchParams.get("today") ||
-      `${now.getFullYear()}-${(now.getMonth() + 1).toString().padStart(2, "0")}-${now
-        .getDate()
-        .toString()
-        .padStart(2, "0")}`;
-
-    const todayTransactions = db
-      .select({
-        id: transactions.id,
-        type: transactions.type,
-        amount: transactions.amount,
-        notes: transactions.notes,
-        createdAt: transactions.createdAt,
-        walletId: transactions.walletId,
-        walletName: wallets.name,
-        walletColor: wallets.color,
-        categoryId: transactions.categoryId,
-        categoryName: categories.name,
-        categoryIcon: categories.icon,
-        categoryColor: categories.color,
-      })
-      .from(transactions)
-      .leftJoin(categories, eq(transactions.categoryId, categories.id))
-      .leftJoin(wallets, eq(transactions.walletId, wallets.id))
-      .where(
-        and(
-          eq(transactions.userId, user.id),
-          eq(transactions.date, todayStr),
-          eq(transactions.type, "EXPENSE")
-        )
-      )
-      .orderBy(desc(transactions.createdAt))
-      .all();
-
-    let todayExpense = 0;
-    const todayCategoryTotals: Record<
-      string,
-      {
-        categoryId: string;
-        categoryName: string;
-        categoryIcon: string;
-        categoryColor: string;
-        totalAmount: number;
-        transactionCount: number;
-        transactions: Array<{
-          id: string;
-          amount: number;
-          notes: string | null;
-          walletName: string | null;
-          walletColor: string | null;
-          createdAt: Date | number;
-        }>;
-      }
-    > = {};
-
-    for (const t of todayTransactions) {
-      todayExpense += t.amount;
-      const catKey = t.categoryId || "uncategorized";
-      if (!todayCategoryTotals[catKey]) {
-        todayCategoryTotals[catKey] = {
-          categoryId: t.categoryId || "",
-          categoryName: t.categoryName || "Lainnya",
-          categoryIcon: t.categoryIcon || "more-horizontal",
-          categoryColor: t.categoryColor || "#64748b",
-          totalAmount: 0,
-          transactionCount: 0,
-          transactions: [],
-        };
-      }
-      todayCategoryTotals[catKey].totalAmount += t.amount;
-      todayCategoryTotals[catKey].transactionCount += 1;
-      todayCategoryTotals[catKey].transactions.push({
-        id: t.id,
-        amount: t.amount,
-        notes: t.notes || null,
-        walletName: t.walletName || null,
-        walletColor: t.walletColor || null,
-        createdAt: t.createdAt,
-      });
-    }
-
-    const todayCategoryBreakdown = Object.values(todayCategoryTotals)
-      .map((cat) => ({
-        ...cat,
-        percentage:
-          todayExpense > 0
-            ? Math.round((cat.totalAmount / todayExpense) * 100)
-            : 0,
-      }))
-      .sort((a, b) => b.totalAmount - a.totalAmount);
-
-    const todaySummary = {
-      date: todayStr,
-      totalExpense: todayExpense,
-      transactionCount: todayTransactions.length,
-      categoryBreakdown: todayCategoryBreakdown,
-    };
+    const todaySummary = getDailyExpenseSummary(user.id, todayStr);
 
     return NextResponse.json({
       month,

@@ -5,19 +5,23 @@ import { X, Check } from "lucide-react";
 import { COLOR_PALETTE, AVAILABLE_ICONS, CategoryIcon } from "@/lib/utils/icons";
 import { parseAmountInput, formatAmountInput } from "@/lib/utils/format";
 
+export interface WalletModalItem {
+  id: string;
+  name: string;
+  type: string;
+  initialBalance: number;
+  color: string;
+  icon: string;
+  isArchived: boolean;
+  currentBalance?: number;
+}
+
 interface WalletModalProps {
   isOpen: boolean;
   onClose: () => void;
-  wallet?: {
-    id: string;
-    name: string;
-    type: string;
-    initialBalance: number;
-    color: string;
-    icon: string;
-    isArchived: boolean;
-  } | null;
+  wallet?: WalletModalItem | null;
   onSuccess: () => void;
+  onOpenAdjust?: (wallet: WalletModalItem) => void;
 }
 
 export function WalletModal({
@@ -25,6 +29,7 @@ export function WalletModal({
   onClose,
   wallet,
   onSuccess,
+  onOpenAdjust,
 }: WalletModalProps) {
   const [name, setName] = useState("");
   const [type, setType] = useState("BANK");
@@ -170,6 +175,21 @@ export function WalletModal({
                 placeholder="0"
                 className="w-full bg-[#242933] border border-[#434C5E] rounded-xl px-3 py-2 text-xs text-[#ECEFF4] focus:ring-2 focus:ring-[#88C0D0] focus:outline-none font-mono"
               />
+              {wallet && onOpenAdjust && (
+                <p className="mt-1.5 text-[10px] text-[#D8DEE9]/70 leading-normal">
+                  Saldo awal adalah saldo pembukaan saat dompet dibuat. Ingin menyelaraskan saldo saat ini dengan rekening bank?{" "}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onOpenAdjust(wallet);
+                    }}
+                    className="text-[#88C0D0] hover:underline font-bold inline"
+                  >
+                    Sesuaikan Saldo Sekarang &rarr;
+                  </button>
+                </p>
+              )}
             </div>
           </div>
 

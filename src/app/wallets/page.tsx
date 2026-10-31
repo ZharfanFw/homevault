@@ -4,8 +4,9 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useApp } from "@/context/AppContext";
 import { formatCurrency } from "@/lib/utils/format";
 import { CategoryIcon } from "@/lib/utils/icons";
-import { Plus, Edit2, Archive, Trash2, ArchiveRestore } from "lucide-react";
+import { Plus, Edit2, Archive, Trash2, ArchiveRestore, SlidersHorizontal } from "lucide-react";
 import { WalletModal } from "@/components/modals/WalletModal";
+import { AdjustBalanceModal } from "@/components/modals/AdjustBalanceModal";
 
 interface WalletItem {
   id: string;
@@ -26,7 +27,8 @@ export default function WalletsPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedWallet, setSelectedWallet] = useState<WalletItem | null>(null);
-
+  const [isAdjustModalOpen, setIsAdjustModalOpen] = useState(false);
+  const [walletToAdjust, setWalletToAdjust] = useState<WalletItem | null>(null);
   const fetchWallets = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -52,6 +54,10 @@ export default function WalletsPage() {
     setIsModalOpen(true);
   };
 
+  const handleOpenAdjust = (wallet: WalletItem) => {
+    setWalletToAdjust(wallet);
+    setIsAdjustModalOpen(true);
+  };
   const handleCreate = () => {
     setSelectedWallet(null);
     setIsModalOpen(true);
@@ -144,6 +150,14 @@ export default function WalletsPage() {
 
               <div className="flex items-center gap-1 shrink-0 ml-2">
                 <button
+                  onClick={() => handleOpenAdjust(wallet)}
+                  className="p-2 text-[#D8DEE9]/60 hover:text-[#88C0D0] rounded-xl hover:bg-[#3B4252] tap-effect"
+                  aria-label="Sesuaikan Saldo"
+                  title="Sesuaikan Saldo"
+                >
+                  <SlidersHorizontal className="w-4 h-4" />
+                </button>
+                <button
                   onClick={() => handleEdit(wallet)}
                   className="p-2 text-[#D8DEE9]/60 hover:text-[#ECEFF4] rounded-xl hover:bg-[#3B4252] tap-effect"
                   aria-label="Edit Dompet"
@@ -221,11 +235,27 @@ export default function WalletsPage() {
         </div>
       )}
 
-      {/* Modal */}
+      {/* Modals */}
       <WalletModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         wallet={selectedWallet}
+        onSuccess={() => triggerRefresh()}
+        onOpenAdjust={(w) => {
+          setIsModalOpen(false);
+          const found = wallets.find((item) => item.id === w.id);
+          handleOpenAdjust(
+            found || {
+              ...w,
+              currentBalance: w.currentBalance ?? w.initialBalance,
+            }
+          );
+        }}
+      />
+      <AdjustBalanceModal
+        isOpen={isAdjustModalOpen}
+        onClose={() => setIsAdjustModalOpen(false)}
+        wallet={walletToAdjust}
         onSuccess={() => triggerRefresh()}
       />
     </div>
